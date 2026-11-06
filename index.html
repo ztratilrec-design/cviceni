@@ -202,7 +202,10 @@ h2:first-child{margin-top:4px}
 .quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .quick button{flex:1;border:1px solid var(--border);background:transparent;border-radius:8px;padding:4px 0;font-size:13px;color:var(--text2);min-width:44px}
 .quick button:hover{background:var(--surface2)}
-.bar{height:7.5px;border-radius:3.75px;background:var(--surface2);margin-top:12px;overflow:hidden}
+.bar{height:7.5px;border-radius:3.75px;background:var(--surface2);margin-top:12px;position:relative}
+.bar>i{max-width:100%}
+.mintick{position:absolute;top:50%;width:3px;height:13px;margin:-6.5px 0 0 -1.5px;border-radius:2px;background:var(--text2);box-shadow:0 0 0 2px var(--surface)}
+.mintick.ok{background:var(--good)}
 .bar>i{display:block;height:100%;border-radius:3px}
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:var(--shadow)}}
 .card.flash{animation:flash 1.4s ease-out}
@@ -283,6 +286,20 @@ main.hist{padding-bottom:16px}
 .exstat dt{color:var(--text2)}
 .exstat dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .h2sub{font-weight:400;font-size:13px;color:var(--text2)}
+#tab-stats h2{margin:14px 0 6px}
+.ttiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ttile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px 10px 3px;min-width:0}
+.ttile .hd{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;min-width:0}
+.ttile .tn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ttile .exi{width:16px;height:16px;margin-left:0}
+.ttile .v{margin-left:auto;font-size:17px;font-weight:700;white-space:nowrap}
+.ttile .v.up{color:var(--goodText)}
+.ttile .v small{font-size:12px;font-weight:600;margin-left:3px}
+.ttile small.up{color:var(--goodText)}
+.ttile small.down{color:var(--remText)}
+.ttile .sp{height:28px}
+.ttile .sp svg{display:block}
+@media (max-width:560px){.ttiles{grid-template-columns:1fr 1fr}}
 .mwrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 #monthTable{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
 #monthTable th,#monthTable td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
@@ -396,14 +413,12 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
   .step{width:44px;min-width:44px;height:44px;font-size:18px}
   .quick{margin:0;flex:1;flex-wrap:nowrap;gap:4px;min-width:0}
   .quick button{min-width:0;min-height:44px;padding:0}
-  .quick .q-x{display:none}
   .bar{margin-top:5px;height:5px}
 }
 @media (max-height:520px) and (min-width:600px) and (max-width:699px){ /* smallest landscape phones: "Podle cviku" 2×2 */
   .exgrid{grid-template-columns:1fr 1fr}
 }
 @media (max-height:520px) and (min-width:600px) and (max-width:759px){ /* narrower phones in landscape: one quick button fewer keeps them ≥ 44px wide */
-  .quick .q-y{display:none}
   .owed{white-space:normal} /* too narrow for one line: wrap rather than cut numbers off */
   .cardhd{min-height:30px}
   .daytitle .lg,.left .lbl{display:none}
@@ -414,6 +429,12 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
   .top{gap:6px}
   .tabs button{padding-left:6px;padding-right:6px}
   .autosave{padding:0 2px}
+}
+@media (max-height:520px) and (min-width:600px) and (max-width:699px){ /* slimmer entry so four quick buttons keep room */
+  .ctl{gap:4px}
+  .entry input{width:46px}
+  .step{width:38px;min-width:38px}
+  .quick{gap:2px}
 }
 @media print{.top,.tabs,.opts{display:none}}
 </style>
@@ -500,7 +521,9 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
     </div>
     <p class="sub" id="rangeLabel"></p>
     </div>
-    <h2>Celkově</h2>
+    <h2 id="trendTitle">Trend</h2>
+    <div class="ttiles" id="trendTiles"></div>
+    <h2>Celkově za období</h2>
     <div class="tiles" id="overallTiles"></div>
     <h2>Podle cviku</h2>
     <div class="exgrid" id="exStats"></div>
@@ -1324,8 +1347,8 @@ function renderDay(){
       <div class="ctl"><div class="entry"><button class="step" data-step="-1" aria-label="méně">−</button>
         <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" enterkeyhint="${k<3?'next':'done'}" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
         <button class="step" data-step="1" aria-label="více">+</button></div>
-      <div class="quick">${(o.t[k]>=50?[10,20,25,100]:[1,5,10]).map(q=>`<button data-add="${q}"${q===20?' class="q-x"':q===25||q===1?' class="q-y"':''}>+${q}</button>`).join('')}<button data-fill>Zbytek</button></div></div>
-      <div class="bar"><i data-bar style="background:${exColor(k)}"></i></div>`;
+      <div class="quick">${(o.t[k]>=50?[10,25]:[5,10]).map(q=>`<button data-add="${q}">+${q}</button>`).join('')}<button data-min>Min</button><button data-fill>Zbytek</button></div></div>
+      <div class="bar"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden></span></div>`;
     const inp=c.querySelector('input');const v=getDone(i,k);inp.value=v==null?'':v;
     const setVal=nv=>{
       if(nv!=null&&(!isFinite(nv)||nv<0))nv=0;
@@ -1341,6 +1364,7 @@ function renderDay(){
     c.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const cur=Number(getDone(i,k))||0;const nv=Math.max(0,cur+Number(b.dataset.step));inp.value=nv;setVal(nv)});
     c.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const nv=(Number(getDone(i,k))||0)+Number(b.dataset.add);inp.value=nv;setVal(nv)});
     c.querySelector('[data-fill]').onclick=()=>{const oo=CALC[i];if(oo.future)return;const nv=Math.max(Number(getDone(i,k))||0,oo.owed[k]);inp.value=nv;setVal(nv)};
+    c.querySelector('[data-min]').onclick=()=>{const oo=CALC[i];if(oo.future)return;const nv=Math.max(Number(getDone(i,k))||0,oo.t[k]+oo.pen[k]);inp.value=nv;setVal(nv)}; // minimum = target + penalty: the backlog doesn't grow
     if(o.future||locked)c.querySelectorAll('button').forEach(b=>b.disabled=true);
     cards.appendChild(c);
   });
@@ -1356,7 +1380,7 @@ function updateDay(){
     const k=+c.dataset.k,done=Number(o.done[k])||0;
     const rem=c.querySelector('[data-rem]'),lbl=c.querySelector('[data-remlbl]');
     {const un=!!(S.edits[S.day]&&S.edits[S.day][k]!==undefined),inp=c.querySelector('input');inp.classList.toggle('unsaved',un);inp.title=un?'Neuloženo':''}
-    if(o.future){rem.textContent='–';rem.className='bignum num fut';lbl.textContent='zatím ne';c.querySelector('[data-owed]').innerHTML='Denní cíl <b>'+fmt(o.t[k])+'</b>';c.querySelector('[data-bar]').style.width='0';return}
+    if(o.future){rem.textContent='–';rem.className='bignum num fut';lbl.textContent='zatím ne';c.querySelector('[data-owed]').innerHTML='Denní cíl <b>'+fmt(o.t[k])+'</b>';c.querySelector('[data-tick]').hidden=true;c.querySelector('[data-bar]').style.width='0';return}
     const ok=o.remDisp[k]==='✓'||o.rem[k]===0;
     const justCleared=ok&&c.dataset.ok==='0';c.dataset.ok=ok?'1':'0'; // only a change made right now, not opening a day
     rem.textContent=ok?'✓':fmt(o.rem[k]);rem.className='bignum num'+(ok?' ok':'');
@@ -1364,6 +1388,9 @@ function updateDay(){
     lbl.textContent=ok?'splněno':'zbývá';
     c.querySelector('[data-owed]').innerHTML=`Zbývá <b>${fmt(o.owed[k])}</b> = cíl ${fmt(o.t[k])} + z min. ${fmt(o.carry[k])} + pokuta ${fmt(o.pen[k])}`;
     c.querySelector('[data-bar]').style.width=Math.min(100,o.owed[k]>0?done/o.owed[k]*100:100)+'%';
+    {const mn=o.t[k]+o.pen[k],tk=c.querySelector('[data-tick]'),t='Minimum '+fmt(mn)+' – dluh neporoste';
+     tk.hidden=false;tk.style.left=Math.min(100,o.owed[k]>0?mn/o.owed[k]*100:100)+'%';tk.classList.toggle('ok',done>=mn);tk.title=t;
+     c.querySelector('[data-min]').title='Doplnit na minimum '+fmt(mn)+' (dluh neporoste)'}
   });
 }
 function goDay(iso,k){
@@ -1461,6 +1488,7 @@ function renderStats(){
   LABEL_YEAR=from.slice(0,4)!==to.slice(0,4);
   const R=CALC.filter(o=>!o.future&&o.iso>=from&&o.iso<=to);const n=R.length;
   $('#rangeLabel').textContent=label+' · '+(n?fmtDay(from,{year:'numeric'})+' – '+fmtDay(to,{year:'numeric'})+' · '+dny(n):'žádné dny');
+  renderTrend(from,to);
   const st=streaks();const perfect=R.filter(o=>o.clear).length;const logged=R.filter(o=>o.any).length;
   const totalDone=R.reduce((a,o)=>a+o.done.reduce((x,y)=>x+(Number(y)||0),0),0);
   const totalPen=R.reduce((a,o)=>a+o.pen.reduce((x,y)=>x+(y||0),0),0);
@@ -1502,6 +1530,29 @@ function renderStats(){
   });
   renderMonths();
   renderHeat();
+}
+let TREND=[];
+function renderTrend(from,to){ // moving average of done as % of the daily target (today excluded – still in progress)
+  const T0=todayISO(),R=CALC.filter(o=>!o.future&&o.iso<T0&&o.iso>=from&&o.iso<=to),WIN=R.length>120?28:7;
+  $('#trendTitle').innerHTML='Trend <span class="h2sub">– '+(WIN===7?'7denní':'4týdenní')+' průměr v % denního cíle, šipka = změna za týden (bez dneška)</span>';
+  TREND=S.book.names.map((n,k)=>{const pc=R.map(o=>(Number(o.done[k])||0)/o.t[k]*100);
+    return pc.map((v,i)=>{const w=pc.slice(Math.max(0,i-WIN+1),i+1);return w.reduce((a,b)=>a+b,0)/w.length})});
+  $('#trendTiles').innerHTML=S.book.names.map((n,k)=>{
+    const ma=TREND[k],last=ma.length?ma[ma.length-1]:null,prev=ma.length>7?ma[ma.length-8]:null,d=last!=null&&prev!=null?last-prev:null;
+    const tip=last==null?'Zatím málo dní':n+': průměr '+Math.round(last)+' % denního cíle'+(prev!=null?' (před týdnem '+Math.round(prev)+' %)':'');
+    return `<div class="ttile" data-k="${k}" title="${esc(tip)}"><div class="hd"><span class="dot" style="background:${exColor(k)}"></span><span class="tn">${esc(n)}</span>${exIcon(k)}`+
+      `<span class="v${last!=null&&last>=100?' up':''}">${last==null?'–':Math.round(last)+' %'}${d==null?'':`<small class="${d>=0?'up':'down'}">${d>=0?'▲':'▼'}${Math.abs(Math.round(d))}</small>`}</span></div><div class="sp"></div></div>`}).join('');
+  requestAnimationFrame(drawTrend);
+}
+function drawTrend(){
+  document.querySelectorAll('#trendTiles .ttile').forEach(tile=>{
+    const k=+tile.dataset.k,ma=TREND[k]||[],box=tile.querySelector('.sp'),w=box.clientWidth,H=28,n=ma.length;
+    if(!n||!w){box.innerHTML='';return}
+    const ymax=Math.max(130,...ma),x=i=>2+i*(w-6)/Math.max(1,n-1),y=v=>3+(H-6)*(1-v/ymax);
+    box.innerHTML=`<svg width="${w}" height="${H}" aria-hidden="true"><line x1="0" x2="${w}" y1="${y(100)}" y2="${y(100)}" stroke="var(--text2)" stroke-width="1" stroke-dasharray="3 3"/>`+
+      `<path d="${ma.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1)).join('')}" fill="none" stroke="${exColor(k)}" stroke-width="1.8" stroke-linejoin="round"/>`+
+      `<circle cx="${x(n-1)}" cy="${y(ma[n-1])}" r="2.8" fill="${exColor(k)}"/></svg>`;
+  });
 }
 function renderMonths(){ // one row per month of the selected period's year (months up to today)
   const B=S.book,year=S.range.startsWith('y:')?S.range.slice(2):rangeBounds().to.slice(0,4);
@@ -1608,7 +1659,7 @@ function renderHeat(){
   svg.addEventListener('mouseleave',hideTip);
   svg.addEventListener('click',e=>{const r=e.target.closest('rect[data-iso]');if(r){hideTip();goDay(r.dataset.iso)}});
 }
-let rsT;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(S.book&&S.tab==='stats'){document.querySelectorAll('.chartcard').forEach(c=>c._draw&&c._draw());renderHeat()}},150)});
+let rsT;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(S.book&&S.tab==='stats'){document.querySelectorAll('.chartcard').forEach(c=>c._draw&&c._draw());drawTrend();renderHeat()}},150)});
 
 /* ================= startup ================= */
 (async function init(){
