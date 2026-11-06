@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cvičení – ochrana soukromí</title>
+<meta name="description" content="Jak aplikace Cvičení zachází s vašimi daty.">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<style>
+:root{color-scheme:light;--page:#f9f9f7;--surface:#fcfcfb;--text:#0b0b0b;--text2:#52514e;--border:rgba(11,11,11,.10);--accent:#2a78d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--page:#0d0d0d;--surface:#1a1a19;--text:#f0efec;--text2:#c3c2b7;--border:rgba(255,255,255,.10);--accent:#86b6ef}}
+:root[data-theme="dark"]{color-scheme:dark;--page:#0d0d0d;--surface:#1a1a19;--text:#f0efec;--text2:#c3c2b7;--border:rgba(255,255,255,.10);--accent:#86b6ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px 16px 48px}
+main{max-width:680px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 22px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+header img{width:44px;height:44px;border-radius:10px}
+h1{font-size:22px;margin:0}
+p.lead{color:var(--text2);margin:4px 0 18px}
+ul{padding-left:20px;margin:0 0 18px;color:var(--text2)}
+li{margin-bottom:10px}
+li b{color:var(--text)}
+a{color:var(--accent)}
+.foot{font-size:14px;color:var(--text2);border-top:1px solid var(--border);padding-top:14px;margin-top:6px}
+</style>
+</head>
+<body>
+<main>
+  <header><img src="icons/icon-192.png" alt=""><h1>Ochrana soukromí</h1></header>
+  <p class="lead">Aplikace Cvičení slouží k zapisování a sledování cvičení v sešitu Excelu (.xlsx).</p>
+  <ul>
+    <li><b>Vše zůstává u vás.</b> Aplikace běží jen ve vašem prohlížeči. Nemá vlastní server, nepoužívá cookies, analytiku ani jiné sledování a vaše data nikam neodesílá.</li>
+    <li><b>Váš sešit.</b> Údaje o cvičení čte a ukládá výhradně do souboru .xlsx, který sami otevřete.</li>
+    <li><b>Paměť prohlížeče.</b> Neuložené záznamy a naposledy otevřený sešit si aplikace pamatuje jen v úložišti vašeho prohlížeče na daném zařízení, aby se nic neztratilo. Smažete je vymazáním dat webu v nastavení prohlížeče.</li>
+    <li><b>Webová adresa.</b> Aplikaci hostuje služba GitHub Pages. Ta jako u každé webové stránky vidí jen běžné technické údaje o načtení stránky (např. IP adresu) – nikoli obsah vašeho sešitu.</li>
+    <li><b>OneDrive (volitelné).</b> Při připojení se přihlašujete přímo u Microsoftu – aplikace vaše heslo nikdy nevidí. Získá jen oprávnění číst a zapisovat soubory ve vašem OneDrive a používá ho výhradně k otevření a uložení sešitu, který si sami vyberete. Přihlášení zůstává jen ve vašem prohlížeči; smažete ho v aplikaci přes ⚙ → Odpojit OneDrive. Přístup aplikace můžete kdykoli zrušit také na stránce <a href="https://account.live.com/consent/Manage">account.live.com/consent/Manage</a>.</li>
+  </ul>
+  <p class="foot"><a href="./">← Zpět do aplikace Cvičení</a></p>
+</main>
+</body>
+</html>
