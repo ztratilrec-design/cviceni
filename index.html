@@ -81,6 +81,10 @@ button{cursor:pointer}
 .file{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
 .fname{color:var(--text2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pill{font-size:12px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.srcic{display:inline-flex;flex:none;color:var(--muted);cursor:help}
+.srcic svg{width:17px;height:17px;display:block}
+.srcic.cloud{color:var(--accent)}
+.srcic.warn{color:#d48a00}
 .pill.saved{background:var(--goodBg);color:var(--goodText)}
 .pill.dirty{background:var(--warnBg);color:var(--warnText)}
 #saveState{cursor:help}
@@ -389,7 +393,7 @@ main.hist{padding-bottom:16px}
 <header class="top">
   <div class="topin">
     <div class="brand">Cvičení</div>
-    <div class="file"><span class="fname" id="fileName">Žádný soubor</span><span id="saveState" class="pill" hidden></span></div>
+    <div class="file"><span class="fname" id="fileName">Žádný soubor</span><span class="srcic" id="srcIcon" hidden role="img"></span><span id="saveState" class="pill" hidden></span></div>
     <div class="actions">
       <button class="btn" id="btnOpen" title="Otevřít soubor .xlsx">Otevřít…</button>
       <button class="btn" id="btnReconnect" hidden title="Znovu povolit přístup k souboru"><span class="lg">Připojit znovu</span><span class="sm">Připojit</span></button>
@@ -827,6 +831,7 @@ function scheduleAutoSave(){clearTimeout(autoTimer);if(autoLive())autoTimer=setT
 $('#autoSave').checked=ls.get('autosave')!=='0';
 $('#autoSave').onchange=e=>{ls.set('autosave',e.target.checked?'1':'0');renderSaveState();if(e.target.checked)scheduleAutoSave()};
 $('#saveState').onclick=e=>{if(e.currentTarget.title)toast(e.currentTarget.title)}; // phones have no hover tooltips
+$('#srcIcon').onclick=e=>{if(e.currentTarget.title)toast(e.currentTarget.title)};
 window.addEventListener('beforeunload',e=>{if(pendingCount()&&!autoLive()){e.preventDefault();e.returnValue=''}});
 
 /* ================= OneDrive (Microsoft Graph) =================
@@ -1109,6 +1114,14 @@ async function addYearSheet(B,year){
 function renderSaveState(text){
   const el=$('#saveState'),n=pendingCount();
   $('#fileName').textContent=S.fileName||'Žádný soubor';
+  { // where the open workbook lives: cloud = OneDrive, crossed-out cloud = local file
+    const ic=$('#srcIcon'),CL='<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4.5 4.5 0 0 1-.5 9.5z"/>';
+    ic.hidden=!S.book;
+    const t=S.od?(S.odNeedLogin?'Sešit z OneDrive – pro ukládání se znovu přihlaste („Připojit“)':'Sešit z OneDrive – ukládá se do cloudu')
+      :S.handle?'Místní soubor v počítači – ukládá se přímo do něj':'Místní kopie – „Uložit kopii“ stáhne aktualizovaný sešit';
+    ic.className='srcic'+(S.od?(S.odNeedLogin?' warn':' cloud'):'');ic.title=t;ic.setAttribute('aria-label',t);
+    ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+CL+(S.od?'':'<line x1="3" y1="3" x2="21" y2="21"/>')+'</svg>';
+  }
   $('#fileName').title=S.od?'OneDrive: ukládá se přímo do sešitu v OneDrive':S.handle?'Připojeno: ukládá se přímo do tohoto souboru':'Otevřeno jako kopie: Uložit kopii stáhne aktualizovaný sešit';
   el.hidden=!S.book;
   if(text){el.className='pill dirty';el.textContent=text}
@@ -1250,7 +1263,7 @@ function renderDay(){
 function updateDay(){
   const B=S.book,i=B.index.get(S.day),o=CALC[i];
   const st=$('#dayStatus');
-  if(o.future)st.innerHTML='<span class="status future">Budoucí den — list ho nechává prázdný, dokud nenastane</span>';
+  if(o.future)st.innerHTML='<span class="status future">Budoucí den (zatím neobsahuje žádná data)</span>';
   else{const n=o.remDisp.filter(v=>v==='✓'||v===0).length;
     st.innerHTML=o.clear?'<span class="status good">✓ Splněny všechny 4</span>':'<span class="status part">Splněno '+n+' ze 4</span>'}
   document.querySelectorAll('#cards .card').forEach(c=>{
