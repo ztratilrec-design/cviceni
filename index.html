@@ -506,6 +506,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
       <button class="btn" id="prevMonth" aria-label="Předchozí měsíc">‹</button>
       <select id="monthPick" class="btn"></select>
       <button class="btn" id="nextMonth" aria-label="Další měsíc">›</button>
+      <button class="btn" id="histToday">Dnes</button>
     </div>
     <div class="tblwrap"><table id="histTable"></table></div>
   </section>
@@ -1418,6 +1419,7 @@ function renderHistory(){
   if(!S.histMonth||!ms.includes(S.histMonth))S.histMonth=ms.includes(T.slice(0,7))?T.slice(0,7):ms[ms.length-1];
   const sel=$('#monthPick');sel.innerHTML=monthOptions(ms,'');sel.value=S.histMonth;
   const mi=ms.indexOf(S.histMonth);$('#prevMonth').disabled=mi<=0;$('#nextMonth').disabled=mi>=ms.length-1;
+  const tb=$('#histToday');tb.disabled=S.histMonth===T.slice(0,7)||!ms.includes(T.slice(0,7));tb.title=tb.disabled?(ms.includes(T.slice(0,7))?'Zobrazen aktuální měsíc':'Dnešní den v sešitu není'):'Zpět na aktuální měsíc';
   const rows=CALC.filter(o=>o.iso.startsWith(S.histMonth));
   let h='<thead><tr><th class="d">Datum</th><th class="dn">Den</th>'+B.names.map((n,k)=>{const c=`style="background:var(--ex${k+1});color:var(--ex${k+1}t)"`;return `<th class="g0" colspan="2" ${c}>${esc(n)}${exIcon(k)}</th><th ${c}>${fmt(rows.length?rows[0].t[k]:B.targets[k])}</th>`}).join('')+'<th class="g0">Hotovo</th></tr>';
   h+='<tr><th class="d"></th><th class="dn"></th>'+B.names.map(()=>'<th class="g0">Pokuta</th><th>Hotovo</th><th>Zbývá</th>').join('')+'<th class="g0"></th></tr></thead><tbody>';
@@ -1454,6 +1456,7 @@ addEventListener('resize',()=>{if(S.book&&S.tab==='history')fitHistory(true)});
 $('#histTable').addEventListener('click',e=>{const tr=e.target.closest('tr[data-iso]');if(!tr)return;const td=e.target.closest('td[data-k]');goDay(tr.dataset.iso,td?+td.dataset.k:null)});
 $('#monthPick').onchange=e=>{S.histMonth=e.target.value;renderHistory()};
 $('#prevMonth').onclick=()=>{const ms=months(),i=ms.indexOf(S.histMonth);if(i>0){S.histMonth=ms[i-1];renderHistory()}};
+$('#histToday').onclick=()=>{const m=todayISO().slice(0,7);if(months().includes(m)){S.histMonth=m;renderHistory()}};
 $('#nextMonth').onclick=()=>{const ms=months(),i=ms.indexOf(S.histMonth);if(i<ms.length-1){S.histMonth=ms[i+1];renderHistory()}};
 
 /* ---------- Stats ---------- */
