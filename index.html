@@ -394,7 +394,6 @@ main.hist{padding-bottom:16px}
       <button class="btn" id="btnOpen" title="Otevřít soubor .xlsx">Otevřít…</button>
       <button class="btn" id="btnReconnect" hidden title="Znovu povolit přístup k souboru"><span class="lg">Připojit znovu</span><span class="sm">Připojit</span></button>
       <button class="btn" id="btnReload" hidden title="Znovu načíst soubor z disku (neuložené záznamy zůstanou)"><span class="lg">Načíst znovu</span><span class="sm">Načíst</span></button>
-      <button class="btn" id="btnShare" hidden title="Sdílet/uložit aktualizovaný sešit (např. do OneDrive nebo na Disk Google)">Sdílet</button>
       <button class="btn primary" id="btnSave" disabled>Uložit</button>
       <div class="setwrap">
         <button class="btn ghost" id="btnSettings" title="Nastavení" aria-label="Nastavení" aria-haspopup="true" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -429,7 +428,8 @@ main.hist{padding-bottom:16px}
     </div>
     <ul>
       <li><b>Počítač, Chrome / Edge:</b> otevřete soubor ze synchronizované složky OneDrive nebo Disku Google a aplikace bude ukládat přímo do něj (automatické ukládání lze zapnout).</li>
-      <li><b>Jiné prohlížeče / telefon:</b> otevřete soubor přes výběr souborů; <i>Uložit kopii</i> stáhne aktualizovaný sešit a přes <i>Sdílet</i> ho vrátíte do OneDrive / na Disk.</li>
+      <li><b>OneDrive (počítač i telefon):</b> ⚙ → <i>Připojit OneDrive</i> – sešit se otevírá i ukládá přímo v OneDrive.</li>
+      <li><b>Jiné prohlížeče / telefon bez OneDrive:</b> otevřete soubor přes výběr souborů; <i>Uložit kopii</i> stáhne aktualizovaný sešit.</li>
       <li>Neuložené záznamy zůstávají v tomto prohlížeči, dokud je neuložíte.</li>
     </ul>
   </section>
@@ -819,7 +819,6 @@ async function save(opts={}){
   finally{S.saving=false;renderSaveState()}
 }
 $('#btnSave').onclick=()=>save();
-$('#btnShare').onclick=()=>save({share:true});
 $('#btnReload').onclick=async()=>{if(!S.od)return reloadFromDisk(false);try{await odOpen(S.od,{quiet:true});toast('Znovu načteno z OneDrive'+(pendingCount()?' – neuložené záznamy ('+pendingCount()+') zůstávají':''))}catch(e){toast(e.message,6000)}};
 $('#btnReconnect').onclick=async()=>{if(S.od){await odLogin({after:'load'});return}if(await ensurePerm()){await reloadFromDisk(true);toast('Připojeno k '+S.fileName);if(pendingCount())scheduleAutoSave()}};
 let autoTimer=null;
@@ -1121,7 +1120,6 @@ function renderSaveState(text){
   $('#btnReload').title=S.od?'Znovu načíst sešit z OneDrive (neuložené záznamy zůstanou)':'Znovu načíst soubor z disku (neuložené záznamy zůstanou)';
   $('#btnReconnect').hidden=!((S.handle&&S.perm!=='granted')||(S.od&&S.odNeedLogin));
   $('#btnReconnect').title=S.od?'Znovu se přihlásit k OneDrive':'Znovu povolit přístup k souboru';
-  $('#btnShare').hidden=!(S.book&&!S.handle&&!S.od&&n&&navigator.canShare&&navigator.canShare({files:[new File([''],'x.xlsx',{type:XLSX_MIME})]}));
   updateMenu();
   el.title=S.od?(n?(autoLive()?'Automaticky ukládám do OneDrive…':'Tlačítkem Uložit zapíšete záznamy do OneDrive ('+n+').'+(S.odNeedLogin?' (Nejprve se znovu přihlaste – „Připojit“.)':'')):'Všechny záznamy jsou uložené v OneDrive.')
     :n?(S.handle?(($('#autoSave').checked&&S.perm==='granted')?'Automaticky ukládám…':'Tlačítkem Uložit zapíšete záznamy do souboru ('+n+').'+(S.perm!=='granted'?' (Automatické ukládání čeká na „Připojit znovu“.)':'')):'Záznamy zůstávají v tomto prohlížeči, dokud sešit neuložíte.')
