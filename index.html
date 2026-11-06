@@ -736,7 +736,7 @@ function cleanEdits(){ // drop edits equal to the file's value or for dates not 
 async function loadInto(bytes,name,handle,lm,{askMerge,od}={}){
   let book;
   try{book=await parseBook(bytes)}catch(e){toast('Soubor nelze otevřít: '+e.message,6000);console.error(e);return false}
-  if(askMerge&&pendingCount()&&S.book&&!confirm('Máte neuložené záznamy ('+pendingCount()+'). Použít je i v právě otevřeném souboru?\n\nOK = ponechat a použít · Zrušit = zahodit'))S.edits={};
+  if(askMerge&&pendingCount()&&S.book&&!confirm('Máte neuložené záznamy ('+pendingCount()+'). Mají se použít i do otevíraného souboru?\n\nOK = ponechat (pro jejich uložení klikněte na „Uložit“)\nZrušit = zahodit neuložené'))S.edits={};
   S.book=book;S.fileName=name;S.handle=handle||null;S.loadedLM=lm??null;
   S.od=od||null;if(!S.od)S.odNeedLogin=false;if(S.od)await idb.set('od',S.od);else await idb.del('od');
   cleanEdits();persistEdits();
