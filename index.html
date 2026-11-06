@@ -181,6 +181,11 @@ h2:first-child{margin-top:4px}
 .left{margin-left:auto;text-align:right}
 .bignum{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
 .bignum.ok{color:var(--goodText)}
+@keyframes pop{0%{transform:scale(.4);opacity:.2}55%{transform:scale(1.35)}100%{transform:scale(1);opacity:1}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(12,163,12,.55)}100%{box-shadow:0 0 0 14px rgba(12,163,12,0)}}
+.bignum.pop{display:inline-block;animation:pop .55s cubic-bezier(.2,.9,.3,1.2)}
+.card.cleared{animation:glow .9s ease-out}
+@media (prefers-reduced-motion:reduce){.bignum.pop,.card.cleared{animation:none}}
 #cards .bignum{color:var(--remText)} /* Den: remaining counts in dark red */
 #cards .bignum.ok{color:var(--goodText)}
 #cards .bignum.fut{color:var(--muted)}
@@ -277,6 +282,19 @@ main.hist{padding-bottom:16px}
 .exstat dl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:10px 0 0;font-size:13px}
 .exstat dt{color:var(--text2)}
 .exstat dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.mwrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+#monthTable{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
+#monthTable th,#monthTable td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
+#monthTable th{font-weight:600;color:var(--text2);font-size:12.5px}
+#monthTable th:first-child,#monthTable td:first-child{text-align:left}
+#monthTable td b{font-weight:650}
+#monthTable td small{display:block;color:var(--muted);font-size:11.5px}
+#monthTable td small .good{color:var(--goodText)}
+#monthTable tbody tr{cursor:pointer}
+@media (hover:hover){#monthTable tbody tr:hover td{background:var(--surface2)}}
+#monthTable tr.sel td{background:var(--todayRow)}
+#monthTable tfoot td{font-weight:650;border-bottom:0;border-top:2px solid var(--axis)}
+#monthTable .exi{width:15px;height:15px;vertical-align:-3px}
 .exstat .sm{display:none}
 .chartgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .chartcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 12px 6px;min-width:0}
@@ -290,6 +308,11 @@ main.hist{padding-bottom:16px}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.15);opacity:0;transition:opacity .08s;max-width:240px}
 .tip b{font-weight:650}
+html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of the browser's page reload */
+.ptr{position:fixed;left:50%;top:0;z-index:45;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--surface);border:1px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;color:var(--accent);transform:translateY(-60px);opacity:0;pointer-events:none}
+.ptr.ready{color:var(--goodText)}
+.ptr.spin svg{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--page);padding:9px 14px;border-radius:10px;font-size:14px;z-index:60;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
 @media (max-width:560px){
   .topin{gap:8px}
@@ -358,7 +381,7 @@ main.hist{padding-bottom:16px}
   .exstat dl{font-size:11.5px;gap:2px 6px;margin-top:6px}
   .exstat dd .lbl{font-size:10px}
   /* Statistiky: all overview tiles in one row */
-  .tiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .tiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
   .tile{padding:7px 9px}
   .tile .v{font-size:20px}
   .tile .k,.tile .s{font-size:11px}
@@ -480,6 +503,9 @@ main.hist{padding-bottom:16px}
     <div class="tiles" id="overallTiles"></div>
     <h2>Podle cviku</h2>
     <div class="exgrid" id="exStats"></div>
+    <h2 id="monthsTitle">Po měsících</h2>
+    <div class="mwrap"><table id="monthTable"></table></div>
+    <p class="sub" style="margin:6px 0 0">Kliknutím na měsíc zobrazíte jeho statistiky.</p>
     <h2 id="doneTitle">Hotovo za den</h2>
     <div class="legend" style="margin:-4px 0 10px"><svg width="22" height="8" aria-hidden="true"><line x1="0" x2="22" y1="4" y2="4" stroke="var(--text2)" stroke-width="1.5" stroke-dasharray="4 3"/></svg><span id="refLegend">denní cíl</span></div>
     <div class="chartgrid" id="doneCharts"></div>
@@ -504,7 +530,7 @@ main.hist{padding-bottom:16px}
 </dialog>
 <dialog id="askMerge" aria-labelledby="askMergeQ">
   <p class="q" id="askMergeQ" tabindex="-1" autofocus></p>
-  <p class="sub">(Pokud je ponecháte, můžete je následně „Uložit“.)</p>
+  <p class="sub">(Pokud je ponecháte a v menu není zapnutý „Autosave“, klikněte poté na „Uložit“.)</p>
   <form method="dialog"><button class="btn" value="drop">Zahodit</button><button class="btn primary" value="keep">Ponechat</button></form>
 </dialog>
 <dialog id="odPick" aria-labelledby="odPickTitle">
@@ -515,6 +541,7 @@ main.hist{padding-bottom:16px}
   <p class="sub" id="odAcct"></p>
   <form method="dialog"><button class="btn" value="cancel">Zavřít</button></form>
 </dialog>
+<div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></div>
 <div class="tip" id="tip" role="tooltip"></div>
 <input type="file" id="fileInput" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
@@ -746,13 +773,14 @@ function cleanEdits(){ // drop edits equal to the file's value or for dates not 
 async function loadInto(bytes,name,handle,lm,{askMerge,od}={}){
   let book;
   try{book=await parseBook(bytes)}catch(e){toast('Soubor nelze otevřít: '+e.message,6000);console.error(e);return false}
-  if(askMerge&&pendingCount()&&S.book&&!(await askKeepEdits(pendingCount())))S.edits={};
+  let kept=false;if(askMerge&&pendingCount()&&S.book){kept=await askKeepEdits(pendingCount());if(!kept)S.edits={}}
   S.book=book;S.fileName=name;S.handle=handle||null;S.loadedLM=lm??null;
   S.od=od||null;if(!S.od)S.odNeedLogin=false;if(S.od)await idb.set('od',S.od);else await idb.del('od');
   cleanEdits();persistEdits();
   const copy=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
   await idb.set('base',{bytes:copy,name,lm:lm??null});
   if(handle)await idb.set('handle',handle);else await idb.del('handle');
+  if(kept&&pendingCount())setTimeout(scheduleAutoSave,0);
   if(!S.day||!book.index.has(S.day))S.day=pickDefaultDay();
   renderAll();return true;
 }
@@ -807,7 +835,7 @@ async function save(opts={}){
       }
       const j=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error((j.error&&j.error.message)||('OneDrive odpověděl chybou '+r.status));
-      S.edits={};await loadInto(bytes,j.name||S.od.name,null,null,{od:odFrom(j,S.od)});
+      S.edits={};S.retryNote=false;await loadInto(bytes,j.name||S.od.name,null,null,{od:odFrom(j,S.od)});
       if(!opts.quiet)toast(opts.added?'List „'+opts.added+'“ byl přidán a uložen do OneDrive.':'Uloženo do OneDrive: '+S.fileName,opts.added?5000:3200);
     }else if(S.handle&&await ensurePerm()){
       const f=await S.handle.getFile();
@@ -829,7 +857,13 @@ async function save(opts={}){
       S.edits={};await loadInto(bytes,S.fileName,null,null);
       toast(opts.added?'List „'+opts.added+'“ byl přidán. Stažen aktualizovaný '+S.fileName+' — nahraďte jím kopii v OneDrive / na Disku Google.':opts.share?'Aktualizovaný sešit odeslán':'Aktualizovaný '+S.fileName+' byl stažen — nahraďte jím kopii v OneDrive / na Disku Google.',opts.added?7000:5000);
     }
-  }catch(e){if(e.name!=='AbortError'&&!(e.login&&opts.quiet)){console.error(e);toast('Uložení selhalo: '+e.message,6000)}}
+  }catch(e){
+    if(e.name==='AbortError'||(e.login&&opts.quiet)){}
+    else if(opts.quiet&&!e.login&&!(e instanceof SyntaxError)){ // automatic save failed (offline / network): retry, tell once
+      if(!S.retryNote){S.retryNote=true;toast('Bez připojení – záznamy se uloží automaticky, až bude síť opět dostupná.',6000)}
+      clearTimeout(S.retryTimer);S.retryTimer=setTimeout(()=>{if(pendingCount())scheduleAutoSave()},30000);
+    }else{console.error(e);toast('Uložení selhalo: '+e.message,6000)}
+  }
   finally{S.saving=false;renderSaveState()}
 }
 $('#btnSave').onclick=()=>save();
@@ -842,6 +876,32 @@ $('#autoSave').checked=ls.get('autosave')!=='0';
 $('#autoSave').onchange=e=>{ls.set('autosave',e.target.checked?'1':'0');renderSaveState();if(e.target.checked)scheduleAutoSave()};
 $('#saveState').onclick=e=>{if(e.currentTarget.title)toast(e.currentTarget.title)}; // phones have no hover tooltips
 $('#srcIcon').onclick=e=>{if(e.currentTarget.title)toast(e.currentTarget.title)};
+// pull-to-refresh: drag down at the top of the page → newest version from OneDrive (or the connected file)
+(()=>{
+  const el=$('#ptr'),MAX=90,TRIG=70;let y0=null,dy=0,busy=false;
+  const blocked=t=>{for(let n=t;n&&n!==document.body;n=n.parentElement){if(n.tagName==='DIALOG'||n.matches('input,select,textarea,.chart'))return true;if(n.scrollTop>0)return true}return false};
+  const show=(d,ready)=>{el.style.transition='none';el.style.opacity=Math.min(1,d/40);el.style.transform=`translateY(${Math.min(d,MAX)-40}px) rotate(${d*3}deg)`;el.classList.toggle('ready',ready)};
+  const hide=()=>{el.style.transition='transform .25s, opacity .25s';el.style.opacity=0;el.style.transform='translateY(-60px)';el.classList.remove('ready','spin')};
+  document.addEventListener('touchstart',e=>{y0=(!busy&&S.book&&scrollY<=0&&e.touches.length===1&&!blocked(e.target))?e.touches[0].clientY:null;dy=0},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0==null)return;dy=(e.touches[0].clientY-y0)*0.55;if(dy<=0||scrollY>0){dy=0;hide();return}show(dy,dy>=TRIG)},{passive:true});
+  document.addEventListener('touchend',async()=>{
+    if(y0==null)return;y0=null;if(dy<TRIG){hide();return}
+    busy=true;el.style.transition='transform .2s';el.style.transform='translateY(28px)';el.classList.add('spin');
+    try{
+      if(S.od){if(S.odNeedLogin)toast('Pro obnovení se nejprve přihlaste k OneDrive („Připojit“).');else{const v=S.od.eTag;await odSync({quiet:true});toast(S.od&&S.od.eTag!==v?'Načtena nejnovější verze z OneDrive':'Sešit je aktuální');if(pendingCount()&&autoLive())save({quiet:true})}}
+      else if(S.handle&&S.perm==='granted')await reloadFromDisk(false);
+      else toast('Obnovit lze sešit z OneDrive nebo připojený soubor.');
+    }catch(e){toast(e.login?e.message:'OneDrive teď není dostupný.',5000)}
+    finally{busy=false;hide()}
+  });
+})();
+// back online / back to the app: sync and save what is still waiting
+addEventListener('online',async()=>{
+  if(!S.book)return;
+  if(S.od){try{if(S.odNeedLogin)return;await odSync({quiet:true})}catch(e){}}
+  if(pendingCount()&&autoLive())save({quiet:true});
+});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.book&&pendingCount()&&autoLive()&&navigator.onLine)scheduleAutoSave()});
 window.addEventListener('beforeunload',e=>{if(pendingCount()&&!autoLive()){e.preventDefault();e.returnValue=''}});
 
 /* ================= OneDrive (Microsoft Graph) =================
@@ -1256,7 +1316,7 @@ function renderDay(){
       <div class="owed" data-owed></div>
       <div class="left"><div class="bignum num" data-rem></div><div class="lbl" data-remlbl></div></div></div>
       <div class="ctl"><div class="entry"><button class="step" data-step="-1" aria-label="méně">−</button>
-        <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
+        <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" enterkeyhint="${k<3?'next':'done'}" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
         <button class="step" data-step="1" aria-label="více">+</button></div>
       <div class="quick">${(o.t[k]>=50?[10,20,25,100]:[1,5,10]).map(q=>`<button data-add="${q}"${q===20?' class="q-x"':q===25||q===1?' class="q-y"':''}>+${q}</button>`).join('')}<button data-fill>Zbytek</button></div></div>
       <div class="bar"><i data-bar style="background:${exColor(k)}"></i></div>`;
@@ -1267,6 +1327,11 @@ function renderDay(){
       S.edits[S.day][k]=nv;cleanEdits();persistEdits();compute();updateDay();renderSaveState();scheduleAutoSave();
     };
     inp.addEventListener('input',()=>setVal(inp.value===''?null:Math.round(Number(inp.value))));
+    inp.addEventListener('keydown',e=>{ // Enter → the next exercise (last one: done)
+      if(e.key!=='Enter')return;e.preventDefault();
+      const all=[...document.querySelectorAll('#cards .card input')].filter(x=>!x.disabled),nx=all[all.indexOf(inp)+1];
+      if(nx){nx.focus();try{nx.select()}catch(_){}}else inp.blur();
+    });
     c.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{const cur=Number(getDone(i,k))||0;const nv=Math.max(0,cur+Number(b.dataset.step));inp.value=nv;setVal(nv)});
     c.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const nv=(Number(getDone(i,k))||0)+Number(b.dataset.add);inp.value=nv;setVal(nv)});
     c.querySelector('[data-fill]').onclick=()=>{const oo=CALC[i];if(oo.future)return;const nv=Math.max(Number(getDone(i,k))||0,oo.owed[k]);inp.value=nv;setVal(nv)};
@@ -1287,7 +1352,9 @@ function updateDay(){
     {const un=!!(S.edits[S.day]&&S.edits[S.day][k]!==undefined),inp=c.querySelector('input');inp.classList.toggle('unsaved',un);inp.title=un?'Neuloženo':''}
     if(o.future){rem.textContent='–';rem.className='bignum num fut';lbl.textContent='zatím ne';c.querySelector('[data-owed]').innerHTML='Denní cíl <b>'+fmt(o.t[k])+'</b>';c.querySelector('[data-bar]').style.width='0';return}
     const ok=o.remDisp[k]==='✓'||o.rem[k]===0;
+    const justCleared=ok&&c.dataset.ok==='0';c.dataset.ok=ok?'1':'0'; // only a change made right now, not opening a day
     rem.textContent=ok?'✓':fmt(o.rem[k]);rem.className='bignum num'+(ok?' ok':'');
+    if(justCleared){void rem.offsetWidth;rem.classList.add('pop');c.classList.remove('cleared');void c.offsetWidth;c.classList.add('cleared')}
     lbl.textContent=ok?'splněno':'zbývá';
     c.querySelector('[data-owed]').innerHTML=`Zbývá <b>${fmt(o.owed[k])}</b> = cíl ${fmt(o.t[k])} + z min. ${fmt(o.carry[k])} + pokuta ${fmt(o.pen[k])}`;
     c.querySelector('[data-bar]').style.width=Math.min(100,o.owed[k]>0?done/o.owed[k]*100:100)+'%';
@@ -1390,12 +1457,14 @@ function renderStats(){
   $('#rangeLabel').textContent=label+' · '+(n?fmtDay(from,{year:'numeric'})+' – '+fmtDay(to,{year:'numeric'})+' · '+dny(n):'žádné dny');
   const st=streaks();const perfect=R.filter(o=>o.clear).length;const logged=R.filter(o=>o.any).length;
   const totalDone=R.reduce((a,o)=>a+o.done.reduce((x,y)=>x+(Number(y)||0),0),0);
+  const totalPen=R.reduce((a,o)=>a+o.pen.reduce((x,y)=>x+(y||0),0),0);
   $('#overallTiles').innerHTML=[
     ['Perfektní dny',`${perfect}<span class="sub"> / ${n}</span>`,n?pct(perfect/n)+' se všemi 4 splněnými':''],
     ['Aktuální série',dny(st.cur),'perfektních dnů v řadě'],
     ['Nejdelší série',dny(st.best),st.bestEnd?'skončila '+fmtDay(st.bestEnd):'—'],
     ['Dny se záznamem',`${logged}<span class="sub"> / ${n}</span>`,'zapsán aspoň jeden cvik'],
     ['Opakování celkem',fmt(totalDone),'všechny cviky v období'],
+    ['Cena pokut','+'+fmt(totalPen),totalDone?'opakování navíc · '+pct(totalPen/totalDone)+' všech':'opakování navíc'],
   ].map(([k,v,s])=>`<div class="tile"><div class="k">${k}</div><div class="v num">${v}</div><div class="s">${s}</div></div>`).join('');
   $('#exStats').innerHTML=B.names.map((name,k)=>{
     const t=R.length?R[R.length-1].t[k]:B.targets[k],base=R.reduce((a,o)=>a+o.t[k],0),done=R.reduce((a,o)=>a+(Number(o.done[k])||0),0),pen=R.reduce((a,o)=>a+(o.pen[k]||0),0);
@@ -1406,7 +1475,7 @@ function renderStats(){
       <div class="bignum num">${fmt(done)}</div><div class="lbl">hotovo · ${n?pct(done/base):'–'} <span class="lg">ze základního cíle</span><span class="sm">z cíle</span> ${fmt(base)}</div>
       <dl><dt>Průměr za den</dt><dd>${n?fmt(Math.round(done/n*10)/10):'–'}</dd>
       <dt>Splněné dny</dt><dd>${cleared} / ${n}</dd>
-      <dt>Pokuty celkem</dt><dd>${fmt(pen)}</dd>
+      <dt>Pokuty celkem</dt><dd>${fmt(pen)}<span class="lbl"> · ${done?pct(pen/done):'–'}</span></dd>
       <dt>Nejlepší den</dt><dd>${best?fmt(best.d)+' <span class="lbl">('+fmtDay(best.iso,{weekday:undefined})+')</span>':'–'}</dd>
       <dt>Zbývá ke konci</dt><dd class="${owedNow===0?'ok':''}">${owedNow==null?'–':owedNow===0?'✓ 0':fmt(owedNow)}</dd></dl></div>`;
   }).join('');
@@ -1425,8 +1494,23 @@ function renderStats(){
     const pts=R.map(o=>({label:o.iso,value:o.rem[k],tip:`<b>${fmtDay(o.iso)}</b><br>${o.rem[k]===0?'✓ splněno':'Zbývá '+fmt(o.rem[k])}<br>Pokuta ${fmt(o.pen[k])} · hotovo ${fmt(o.done[k]||0)}`}));
     bc.appendChild(chartCard(name,k,el=>lineChart(el,pts,k)));
   });
+  renderMonths();
   renderHeat();
 }
+function renderMonths(){ // one row per month of the selected period's year (months up to today)
+  const B=S.book,year=S.range.startsWith('y:')?S.range.slice(2):rangeBounds().to.slice(0,4);
+  const D=CALC.filter(o=>!o.future&&o.iso.startsWith(year));
+  $('#monthsTitle').textContent='Po měsících – '+year;
+  const ms=[...new Set(D.map(o=>o.iso.slice(0,7)))];
+  const cell=(R,k)=>{const done=R.reduce((a,o)=>a+(Number(o.done[k])||0),0),base=R.reduce((a,o)=>a+o.t[k],0),pen=R.reduce((a,o)=>a+(o.pen[k]||0),0),q=base?done/base:0;
+    return `<td><b>${fmt(done)}</b><small><span class="${q>=1?'good':''}">${base?pct(q):'–'}</span> · pokuty ${fmt(pen)}</small></td>`};
+  const row=(R,label,cls,attr)=>`<tr class="${cls}"${attr}><td>${label}</td>`+B.names.map((n,k)=>cell(R,k)).join('')+`<td><b>${R.filter(o=>o.clear).length}</b><small>z ${dny(R.length)}</small></td></tr>`;
+  let h='<thead><tr><th>Měsíc</th>'+B.names.map((n,k)=>`<th><span class="dot" style="display:inline-block;background:${exColor(k)};margin-right:5px"></span>${esc(n)}${exIcon(k)}</th>`).join('')+'<th>Perfektní dny</th></tr></thead><tbody>';
+  h+=ms.map(m=>row(D.filter(o=>o.iso.startsWith(m)),fmtMonth(m).replace(' '+year,''),S.range==='m:'+m?'sel':'',` data-m="${m}"`)).join('');
+  h+='</tbody><tfoot>'+row(D,'Celkem '+year,'','')+'</tfoot>';
+  $('#monthTable').innerHTML=ms.length?h:'<tbody><tr><td class="sub">V tomto roce zatím nejsou žádné dny.</td></tr></tbody>';
+}
+$('#monthTable').addEventListener('click',e=>{const tr=e.target.closest('tr[data-m]');if(!tr)return;S.range='m:'+tr.dataset.m;ls.set('range',S.range);renderStats();scrollTo({top:0,behavior:'smooth'})});
 $('#rangeChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;S.range=b.dataset.range;ls.set('range',S.range);renderStats()});
 $('#rangeMonth').onchange=e=>{if(e.target.value){S.range=e.target.value;ls.set('range',S.range);renderStats()}};
 $('#rangeYear').onchange=e=>{if(e.target.value){S.range=e.target.value;ls.set('range',S.range);renderStats()}};
