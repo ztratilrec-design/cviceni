@@ -282,6 +282,7 @@ main.hist{padding-bottom:16px}
 .exstat dl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:10px 0 0;font-size:13px}
 .exstat dt{color:var(--text2)}
 .exstat dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.h2sub{font-weight:400;font-size:13px;color:var(--text2)}
 .mwrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 #monthTable{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
 #monthTable th,#monthTable td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
@@ -503,14 +504,13 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
     <div class="tiles" id="overallTiles"></div>
     <h2>Podle cviku</h2>
     <div class="exgrid" id="exStats"></div>
-    <h2 id="monthsTitle">Po měsících</h2>
-    <div class="mwrap"><table id="monthTable"></table></div>
-    <p class="sub" style="margin:6px 0 0">Kliknutím na měsíc zobrazíte jeho statistiky.</p>
     <h2 id="doneTitle">Hotovo za den</h2>
     <div class="legend" style="margin:-4px 0 10px"><svg width="22" height="8" aria-hidden="true"><line x1="0" x2="22" y1="4" y2="4" stroke="var(--text2)" stroke-width="1.5" stroke-dasharray="4 3"/></svg><span id="refLegend">denní cíl</span></div>
     <div class="chartgrid" id="doneCharts"></div>
     <h2>Zbývá (na konci každého dne)</h2>
     <div class="chartgrid" id="backlogCharts"></div>
+    <h2 id="monthsTitle">Po měsících</h2>
+    <div class="mwrap"><table id="monthTable"></table></div>
     <h2 id="heatTitle">Kalendář: splněné cviky za den</h2>
     <div class="heatwrap" id="heat"></div>
     <div class="legend" id="heatLegend"></div>
@@ -966,7 +966,7 @@ async function gjson(path){
   return j;
 }
 const odItemPath=od=>'/drives/'+encodeURIComponent(od.driveId)+'/items/'+encodeURIComponent(od.itemId);
-const odFrom=(m,prev={})=>({...prev,driveId:(m.parentReference&&m.parentReference.driveId)||prev.driveId,itemId:m.id||prev.itemId,name:m.name||prev.name,eTag:m.eTag||prev.eTag});
+const odFrom=(m,prev={})=>({...prev,driveId:(m.parentReference&&m.parentReference.driveId)||prev.driveId,itemId:m.id||prev.itemId,name:m.name||prev.name,eTag:m.eTag||prev.eTag,modified:m.lastModifiedDateTime||prev.modified});
 async function odOpen(od,{askMerge=false,quiet=false}={}){ // download the workbook from OneDrive into the app (keeps unsaved entries)
   const m=await gjson(odItemPath(od));
   const dl=m['@microsoft.graph.downloadUrl'];
@@ -978,7 +978,8 @@ async function odOpen(od,{askMerge=false,quiet=false}={}){ // download the workb
 }
 async function odSync({quiet=false}={}){ // reload when the file changed in OneDrive (Excel, another device)
   if(!S.od||S.saving)return;
-  const m=await gjson(odItemPath(S.od)+'?$select=id,name,eTag');
+  const m=await gjson(odItemPath(S.od)+'?$select=id,name,eTag,lastModifiedDateTime');
+  if(m.eTag===S.od.eTag&&m.lastModifiedDateTime&&m.lastModifiedDateTime!==S.od.modified){S.od.modified=m.lastModifiedDateTime;renderSaveState()}
   if(m.eTag!==S.od.eTag){await odOpen(S.od,{quiet:true});if(!quiet)toast('Sešit se v OneDrive změnil – načtena nejnovější verze'+(pendingCount()?' (neuložené záznamy zůstávají)':''),5000)}
 }
 async function odUpload(bytes){ // save; If-Match = only if nobody changed the file meanwhile
@@ -1186,6 +1187,11 @@ async function addYearSheet(B,year){
 }
 
 /* ================= rendering ================= */
+function savedAt(){ // when the file was last saved (OneDrive / file "last modified"): " 14:32", older days " 5. 11. 14:32"
+  const t=S.od?(S.od.modified?Date.parse(S.od.modified):NaN):S.handle?S.loadedLM:NaN;if(!t||!isFinite(t))return'';
+  const d=new Date(t),hm=d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+  return ' '+(d.toDateString()===new Date().toDateString()?hm:d.getDate()+'. '+(d.getMonth()+1)+'. '+hm);
+}
 function renderSaveState(text){
   const el=$('#saveState'),n=pendingCount();
   $('#fileName').textContent=S.fileName||'Žádný soubor';
@@ -1201,7 +1207,7 @@ function renderSaveState(text){
   el.hidden=!S.book;
   if(text){el.className='pill dirty';el.textContent=text}
   else if(n){el.className='pill dirty';el.textContent=n+' neuloženo'}
-  else{el.className='pill saved';el.textContent=(S.handle||S.od)?'✓ Uloženo':'✓ Beze změn'}
+  else{el.className='pill saved';el.textContent=(S.handle||S.od)?'✓ Uloženo'+savedAt():'✓ Beze změn'}
   $('#btnSave').disabled=!S.book||(!n&&!!(S.handle||S.od));
   $('#btnSave').textContent=(S.handle||S.od)?'Uložit':'Uložit kopii';
   $('#btnReload').hidden=!((S.handle&&S.perm==='granted')||(S.od&&!S.odNeedLogin));
@@ -1500,7 +1506,7 @@ function renderStats(){
 function renderMonths(){ // one row per month of the selected period's year (months up to today)
   const B=S.book,year=S.range.startsWith('y:')?S.range.slice(2):rangeBounds().to.slice(0,4);
   const D=CALC.filter(o=>!o.future&&o.iso.startsWith(year));
-  $('#monthsTitle').textContent='Po měsících – '+year;
+  $('#monthsTitle').innerHTML='Po měsících — '+year+' <span class="h2sub">(kliknutím na měsíc se zvolí jako filtr)</span>';
   const ms=[...new Set(D.map(o=>o.iso.slice(0,7)))];
   const cell=(R,k)=>{const done=R.reduce((a,o)=>a+(Number(o.done[k])||0),0),base=R.reduce((a,o)=>a+o.t[k],0),pen=R.reduce((a,o)=>a+(o.pen[k]||0),0),q=base?done/base:0;
     return `<td><b>${fmt(done)}</b><small><span class="${q>=1?'good':''}">${base?pct(q):'–'}</span> · pokuty ${fmt(pen)}</small></td>`};
