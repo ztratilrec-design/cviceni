@@ -59,13 +59,13 @@ Zápis hodnot pro vybraný den.
 
 - **Navigace:** ‹ / › předchozí a další den, výběr data, **Dnes** návrat na dnešek. Vedle je název dne a počet splněných cviků (*Splněno 2 ze 4*).
 - **Karta cviku** ukazuje:
-  - rozpis **Zbývá = cíl + z min. + pokuta** a velké číslo, kolik ještě zbývá (✓ po splnění),
+  - rozpis **zbývající dávky = cíl + z min. + pokuta** a velké číslo, kolik ještě zbývá (✓ po splnění),
   - pole **Hotovo** s tlačítky **− / +**,
   - **progress bar** – kolik z dnešní dávky je hotovo; **svislá značka** v barvě cviku ukazuje **minimum** (cíl + pokuta), při jehož splnění dluh dál neroste.
 - **Rychlá tlačítka:**
   - **+10 / +25** (u shybů **+5 / +10**) – přičte k hodnotě,
   - **Min** – doplní hodnotu na minimum (cíl + pokuta),
-  - **Zbytek** – doplní vše, co zbývá (včetně dluhu z minula).
+  - **Rest** – doplní vše, co zbývá (včetně dluhu z minula).
 - Budoucí dny zobrazují jen denní cíl.
 
 ---

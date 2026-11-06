@@ -1348,7 +1348,7 @@ function renderDay(){
       <div class="ctl"><div class="entry"><button class="step" data-step="-1" aria-label="méně">−</button>
         <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" enterkeyhint="${k<3?'next':'done'}" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
         <button class="step" data-step="1" aria-label="více">+</button></div>
-      <div class="quick">${(o.t[k]>=50?[10,25]:[5,10]).map(q=>`<button data-add="${q}">+${q}</button>`).join('')}<button data-min>Min</button><button data-fill>Zbytek</button></div></div>
+      <div class="quick">${(o.t[k]>=50?[10,25]:[5,10]).map(q=>`<button data-add="${q}">+${q}</button>`).join('')}<button data-min>Min</button><button data-fill title="Doplnit vše, co zbývá">Rest</button></div></div>
       <div class="bar"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden style="background:${exColor(k)}"></span></div>`;
     const inp=c.querySelector('input');const v=getDone(i,k);inp.value=v==null?'':v;
     const setVal=nv=>{
@@ -1387,7 +1387,7 @@ function updateDay(){
     rem.textContent=ok?'✓':fmt(o.rem[k]);rem.className='bignum num'+(ok?' ok':'');
     if(justCleared){void rem.offsetWidth;rem.classList.add('pop');c.classList.remove('cleared');void c.offsetWidth;c.classList.add('cleared')}
     lbl.textContent=ok?'splněno':'zbývá';
-    c.querySelector('[data-owed]').innerHTML=`Zbývá <b>${fmt(o.owed[k])}</b> = cíl ${fmt(o.t[k])} + z min. ${fmt(o.carry[k])} + pokuta ${fmt(o.pen[k])}`;
+    c.querySelector('[data-owed]').innerHTML=`<b>${fmt(o.owed[k])}</b> = cíl ${fmt(o.t[k])} + z min. ${fmt(o.carry[k])} + pokuta ${fmt(o.pen[k])}`;
     c.querySelector('[data-bar]').style.width=Math.min(100,o.owed[k]>0?done/o.owed[k]*100:100)+'%';
     {const mn=o.t[k]+o.pen[k],tk=c.querySelector('[data-tick]'),t='Minimum '+fmt(mn)+' – dluh neporoste';
      tk.hidden=false;tk.style.left=Math.min(100,o.owed[k]>0?mn/o.owed[k]*100:100)+'%';tk.classList.toggle('ok',done>=mn);tk.title=t;
