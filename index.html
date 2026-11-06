@@ -205,7 +205,6 @@ h2:first-child{margin-top:4px}
 .bar{height:7.5px;border-radius:3.75px;background:var(--surface2);margin-top:12px;position:relative}
 .bar>i{max-width:100%}
 .mintick{position:absolute;top:50%;width:3px;height:13px;margin:-6.5px 0 0 -1.5px;border-radius:2px;background:var(--text2);box-shadow:0 0 0 2px var(--surface)}
-.mintick.ok{background:var(--good)}
 .bar>i{display:block;height:100%;border-radius:3px}
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:var(--shadow)}}
 .card.flash{animation:flash 1.4s ease-out}
@@ -414,6 +413,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
   .quick{margin:0;flex:1;flex-wrap:nowrap;gap:4px;min-width:0}
   .quick button{min-width:0;min-height:44px;padding:0}
   .bar{margin-top:5px;height:5px}
+  .mintick{height:9px;margin-top:-4.5px}
 }
 @media (max-height:520px) and (min-width:600px) and (max-width:699px){ /* smallest landscape phones: "Podle cviku" 2×2 */
   .exgrid{grid-template-columns:1fr 1fr}
@@ -1349,7 +1349,7 @@ function renderDay(){
         <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" enterkeyhint="${k<3?'next':'done'}" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
         <button class="step" data-step="1" aria-label="více">+</button></div>
       <div class="quick">${(o.t[k]>=50?[10,25]:[5,10]).map(q=>`<button data-add="${q}">+${q}</button>`).join('')}<button data-min>Min</button><button data-fill>Zbytek</button></div></div>
-      <div class="bar"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden></span></div>`;
+      <div class="bar"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden style="background:${exColor(k)}"></span></div>`;
     const inp=c.querySelector('input');const v=getDone(i,k);inp.value=v==null?'':v;
     const setVal=nv=>{
       if(nv!=null&&(!isFinite(nv)||nv<0))nv=0;
