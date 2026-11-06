@@ -460,6 +460,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
           <div class="msep"></div>
           <button class="mi" id="btnAddYear" type="button"><span class="miic" aria-hidden="true">+</span><span><b>Přidat do .xlsx další rok</b><small id="addYearNote"></small></span></button>
           <div class="msep"></div>
+          <button class="mi" id="btnInstall" type="button" hidden><span class="miic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span><b>Nainstalovat aplikaci</b><small id="installNote"></small></span></button>
           <button class="mi" id="btnPrivacy" type="button"><span class="miic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/></svg></span><span><b>Ochrana soukromí</b><small>Jak aplikace zachází s vašimi daty</small></span></button>
         </div>
       </div>
@@ -1112,8 +1113,25 @@ function updateMenu(){
   $('#btnAddYear').disabled=!S.book;
   $('#addYearNote').textContent=S.book?'Přidá list „'+nextYear()+'“ podle skutečného kalendáře':'Nejprve otevřete sešit';
   $('#darkMode').checked=isDark();
+  updateInstall();
 }
 $('#btnAddYear').onclick=addNextYear;
+/* install as an app (PWA): Chrome's own prompt appears only once – keep it so the menu can offer it again */
+let installEv=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;updateInstall()});
+addEventListener('appinstalled',()=>{installEv=null;updateInstall();toast('Aplikace je nainstalovaná – najdete ji mezi aplikacemi v telefonu.',6000)});
+function updateInstall(){
+  const b=$('#btnInstall');b.hidden=location.protocol==='file:'||isStandalone();
+  $('#installNote').textContent=installEv?'Spustit z plochy jako samostatnou aplikaci':'Postup přes nabídku prohlížeče';
+}
+updateInstall();
+$('#btnInstall').onclick=async()=>{
+  openMenu(false);
+  if(installEv){const ev=installEv;installEv=null;ev.prompt();try{const r=await ev.userChoice;if(r.outcome!=='accepted')toast('Instalace zrušena.')}catch(e){}updateInstall();return}
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  toast(ios?'V Safari: Sdílet → Přidat na plochu.':'V Chrome: ⋮ → Přidat na plochu (nebo Nainstalovat aplikaci). Pokud položka chybí, aplikace už je nejspíš nainstalovaná – hledejte ji mezi aplikacemi v telefonu.',9000);
+};
 $('#btnPrivacy').onclick=()=>{openMenu(false);showPrivacy(false)};
 
 /* ================= adding the next year sheet (same generator as build_years.py) ================= */

@@ -41,7 +41,7 @@ Ikona ☁ vedle názvu souboru ukazuje, zda je sešit připojený k OneDrive (p�
 
 ### Instalace jako aplikace
 
-V Chrome / Edge: ⋮ → *Nainstalovat aplikaci* (na Androidu *Přidat na plochu*). Aplikace se pak spouští z plochy jako samostatné okno.
+⚙ → **Nainstalovat aplikaci** (nebo v Chrome / Edge: ⋮ → *Nainstalovat aplikaci* / *Přidat na plochu*). Aplikace se pak spouští z plochy jako samostatné okno.
 
 ---
 
@@ -93,7 +93,7 @@ Měsíční tabulka v barvách původního listu: datum, den v týdnu a pro kaž
 
 ## Nastavení (⚙)
 
-OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok) a **Ochrana soukromí**.
+OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok), **Nainstalovat aplikaci** a **Ochrana soukromí**.
 
 ---
 
