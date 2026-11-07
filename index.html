@@ -1163,7 +1163,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-07 18:31';
+const APP_VERSION='2026-11-07 18:49';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1489,7 +1489,10 @@ function attachScrub(inp,card,k,getO,apply){
   },{passive:false});
   function start(){
     if(!st||st.mode!=='wait')return;const o=getO();st.mode='scrub';cancelAnimationFrame(st.raf);st.els.forEach(e=>e.remove());
-    st.v0=Number(inp.value)||0;st.v=st.v0;st.acc=0;st.hold=0;st.lt=performance.now();st.min=o.t[k]+o.pen[k];st.rest=o.owed[k];st.col=getComputedStyle(document.documentElement).getPropertyValue(EXVAR[k]).trim();
+    st.v0=Number(inp.value)||0;st.v=st.v0;st.min=o.t[k]+o.pen[k];st.rest=o.owed[k];st.snapIn=null;
+    // value follows the finger's POSITION (not speed): the start level always means the start value, the top edge reaches a bit past Rest, the bottom edge 0
+    st.Du=Math.max(40,st.y-8);st.Dd=Math.max(40,innerHeight-8-st.y);
+    st.Ru=Math.max(st.rest*1.1-st.v0,60,st.Du/5+20);st.Rd=Math.max(0,st.v0*1.1-st.Dd/5);st.col=getComputedStyle(document.documentElement).getPropertyValue(EXVAR[k]).trim();
     if(navigator.vibrate)try{navigator.vibrate(15)}catch(_){}
     const dim=document.createElement('div');dim.className='scrub-dim';const rul=document.createElement('div');rul.className='scrub-rul';
     document.body.append(dim,rul);st.els=[dim,rul];document.documentElement.classList.add('scrubbing');card.classList.add('scrub-card');card.style.setProperty('--sc',st.col);inp.classList.add('scrub-on');
@@ -1521,11 +1524,13 @@ function attachScrub(inp,card,k,getO,apply){
     }
     if(st.mode==='scroll'){scrollBy(0,st.lastY-t.clientY);st.lastY=t.clientY;return}
     if(st.mode!=='scrub')return;
-    const dpx=st.lastY-t.clientY,dt=Math.max(1,now-st.lt);st.lastY=t.clientY;st.lt=now;
-    if(st.hold>0){st.hold-=Math.abs(dpx);return}                 // resting on Min / Rest for a moment
-    const speed=Math.abs(dpx)/dt,f=Math.min(20,1+Math.max(0,speed-0.3)*12); // faster finger → bigger jumps
-    st.acc+=dpx/6*f;let nv=Math.max(0,Math.round(st.v0+st.acc));
-    for(const s of [st.min,st.rest])if(s>0&&((st.v<s&&nv>=s)||(st.v>s&&nv<=s))){nv=s;st.acc=s-st.v0;st.hold=18;if(navigator.vibrate)try{navigator.vibrate(25)}catch(_){}break}
+    st.lastY=t.clientY;
+    const g=d=>d>=0?st.v0+d/5+(st.Ru-st.Du/5)*Math.pow(Math.min(d,st.Du)/st.Du,3)    // fine near the start (≈1 per 5 px), faster towards the edge
+                   :Math.max(0,st.v0-(-d)/5-st.Rd*Math.pow(Math.min(-d,st.Dd)/st.Dd,3));
+    const d=st.y-t.clientY;let nv=Math.max(0,Math.round(g(d))),snap=null;
+    for(const s of [st.min,st.rest])if(s>0&&s!==st.v0&&g(d-9)<=s&&g(d+9)>=s){nv=s;snap=s;break} // a short stop (≈18 px) at Min and Rest
+    if(snap!=null&&snap!==st.snapIn&&navigator.vibrate)try{navigator.vibrate(25)}catch(_){}
+    st.snapIn=snap;
     if(nv!==st.v){st.v=nv;apply(nv);draw()}
   }
   function up(e){
