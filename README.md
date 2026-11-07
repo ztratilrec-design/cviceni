@@ -48,7 +48,7 @@ Ikona ☁ vedle názvu souboru ukazuje, zda je sešit připojený k OneDrive (p�
 ## Ovládání
 
 - **Klávesnice:** v poli pro zadání hodnoty **Enter** přeskočí na další cvik (u posledního zavře klávesnici). **Esc** zavře nabídku ⚙.
-- **Dotyk:** **přejetí doleva / doprava** přepíná karty Den → Historie → Statistiky. **Tažení dolů** na začátku stránky načte nejnovější verzi sešitu.
+- **Dotyk:** **klepnutí** na pole s číslem otevře klávesnici; **podržení pole a tažení nahoru / dolů** mění hodnotu (rychlejší tah = větší skoky, krátké zastavení na *Min* a *Rest*); **podržení − / +** přičítá či odečítá opakovaně. **Přejetí doleva / doprava** přepíná karty Den → Historie → Statistiky. **Tažení dolů** na začátku stránky načte nejnovější verzi sešitu.
 - **Tip:** podržením (nebo najetím myší) na pilulku, grafy a značky se zobrazí vysvětlivky.
 
 ---
@@ -93,7 +93,7 @@ Měsíční tabulka v barvách původního listu: datum, den v týdnu a pro kaž
 
 ## Nastavení (⚙)
 
-OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok), **Nainstalovat aplikaci** a **Ochrana soukromí**.
+OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok), **Nainstalovat aplikaci**, **verze aplikace** (*Nejnovější verze*, nebo klepnutím načíst novější – na ⚙ ji ohlásí zelená tečka) a **Ochrana soukromí**.
 
 ---
 

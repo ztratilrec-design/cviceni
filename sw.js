@@ -1,7 +1,7 @@
 // Service worker: makes the app installable and usable offline.
 // The app page is fetched fresh when online (so updates arrive right away) and served from the cache when offline.
 // The workbook (.xlsx) is never touched here – it is opened and saved by the page itself.
-const CACHE = 'cviceni-v2';
+const CACHE = 'cviceni-v3';
 const ASSETS = ['./', 'index.html', 'soukromi.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'icons/icon-maskable-192.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'];
 
@@ -20,6 +20,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
+  if (url.searchParams.has('v')) return; // the app's version check: always straight from the network, never cached
 
   // the app page: network first (4 s), cached copy as fallback
   if (req.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
