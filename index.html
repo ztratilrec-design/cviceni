@@ -617,7 +617,19 @@ const idb=(()=>{let p;const db=()=>p||(p=new Promise((res,rej)=>{const r=indexed
 /* ================= parsing the workbook ================= */
 function colNum(ref){let n=0;for(const ch of ref.match(/^[A-Z]+/)[0])n=n*26+ch.charCodeAt(0)-64;return n}
 async function parseBook(bytes){
-  const zip=await JSZip.loadAsync(bytes);
+  try{return await parseBook1(bytes)}
+  catch(e){ // e.g. a save into a file-provider that didn't cut off the old, longer file: try each earlier end-of-zip record
+    const u=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
+    for(let i=u.length-22;i>=0&&i>=u.length-262144;i--){
+      if(u[i]!==0x50||u[i+1]!==0x4b||u[i+2]!==0x05||u[i+3]!==0x06)continue;
+      const end=i+22+(u[i+20]|u[i+21]<<8);if(end>u.length||end===u.length)continue;
+      try{const b=await parseBook1(u.slice(0,end));b.repaired=u.length-end;return b}catch(_){}
+    }
+    throw e;
+  }
+}
+async function parseBook1(bytes){
+  const zip=await JSZip.loadAsync(bytes,{checkCRC32:true});
   const wbPath='xl/workbook.xml';
   const wbXml=await zip.file(wbPath).async('string');
   const relsXml=await zip.file('xl/_rels/workbook.xml.rels').async('string');
@@ -806,6 +818,12 @@ async function loadInto(bytes,name,handle,lm,{askMerge,od}={}){
   await idb.set('base',{bytes:copy,name,lm:lm??null});
   if(handle)await idb.set('handle',handle);else await idb.del('handle');
   if(kept&&pendingCount())setTimeout(scheduleAutoSave,0);
+  S.repair=!!book.repaired;
+  if(book.repaired){
+    console.warn('workbook repaired: dropped '+book.repaired+' trailing bytes');
+    if((handle&&S.perm==='granted')||od){toast('Soubor byl poškozený (na konci zůstala data ze starší verze) – obsah byl obnoven a soubor se teď uloží opravený.',7000);setTimeout(()=>save({quiet:true}),0)}
+    else toast('Soubor byl poškozený (na konci zůstala data ze starší verze) – obsah byl obnoven. Opravený sešit získáte tlačítkem „Uložit kopii“.',8000);
+  }
   if(!S.day||!book.index.has(S.day))S.day=pickDefaultDay();
   renderAll();return true;
 }
@@ -843,6 +861,10 @@ async function reloadFromDisk(silent){
   if(!silent)toast('Soubor znovu načten'+(pendingCount()?' — neuložené záznamy ('+pendingCount()+') zůstávají':''));
 }
 function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes],{type:XLSX_MIME}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+async function writeHandle(bytes){ // write + explicit truncate, then report what the storage really holds
+  const w=await S.handle.createWritable({keepExistingData:false});await w.write(bytes);try{await w.truncate(bytes.length)}catch(_){}await w.close();
+  return S.handle.getFile();
+}
 async function save(opts={}){
   if(!S.book||S.saving)return;
   if(opts.quiet&&S.handle){ // automatic save: never fall back to a download – just wait for "Připojit znovu"
@@ -869,8 +891,15 @@ async function save(opts={}){
         toast('Soubor se mezitím změnil — vaše záznamy byly sloučeny do nejnovější verze.',5000);
       }
       const bytes=await buildXlsx();
-      const w=await S.handle.createWritable();await w.write(bytes);await w.close();
-      const f2=await S.handle.getFile();
+      let f2=await writeHandle(bytes),want=bytes.length;
+      if(f2.size>want){ // the storage provider (e.g. the OneDrive app on Android) kept the end of the older, longer file
+        const pad=f2.size-want;
+        if(pad<65536&&bytes[want-22]===0x50&&bytes[want-21]===0x4b&&bytes[want-2]===0&&bytes[want-1]===0){
+          const out=new Uint8Array(f2.size).fill(0x20);out.set(bytes);out[want-2]=pad&255;out[want-1]=pad>>8; // cover it with a zip comment (spaces) – a valid .xlsx again
+          f2=await writeHandle(out);want=out.length;
+        }
+      }
+      if(f2.size!==want)throw new Error('úložiště soubor nezapsalo celý (velikost '+f2.size+' místo '+want+' B). Doporučujeme ⚙ → Připojit OneDrive.');
       S.edits={};await loadInto(bytes,S.fileName,S.handle,f2.lastModified);
       if(!opts.quiet)toast(opts.added?'List „'+opts.added+'“ byl přidán a uložen do '+S.fileName+'.':'Uloženo do '+S.fileName,opts.added?5000:3200);
     }else{
@@ -1250,7 +1279,7 @@ function renderSaveState(text){
   if(text){el.className='pill dirty';el.textContent=text}
   else if(n){el.className='pill dirty';el.textContent=n+' neuloženo'}
   else{el.className='pill saved';el.textContent=(S.handle||S.od)?'✓ Uloženo'+savedAt():'✓ Beze změn'}
-  $('#btnSave').disabled=!S.book||(!n&&!!(S.handle||S.od));
+  $('#btnSave').disabled=!S.book||(!n&&!S.repair&&!!(S.handle||S.od));
   $('#btnSave').textContent=(S.handle||S.od)?'Uložit':'Uložit kopii';
   $('#btnReload').hidden=!((S.handle&&S.perm==='granted')||(S.od&&!S.odNeedLogin));
   $('#btnReload').title=S.od?'Znovu načíst sešit z OneDrive (neuložené záznamy zůstanou)':'Znovu načíst soubor z disku (neuložené záznamy zůstanou)';
