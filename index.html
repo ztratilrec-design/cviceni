@@ -208,6 +208,7 @@ h2:first-child{margin-top:4px}
 .bar{height:7.5px;border-radius:3.75px;background:var(--surface2);margin-top:12px;position:relative}
 .bar>i{max-width:100%}
 .scrub-dim{position:fixed;inset:0;background:rgba(20,20,28,.42);z-index:60;touch-action:none}
+html.scrubbing,html.scrubbing body{touch-action:none;overscroll-behavior:none}
 .scrub-card{position:relative;z-index:61}
 input.scrub-on{outline:3px solid var(--sc);outline-offset:1px;background:var(--surface)!important;color:var(--text)!important}
 .scrub-bub{position:fixed;z-index:63;transform:translate(-50%,-100%);background:var(--text);color:var(--surface);border-radius:12px;padding:3px 12px 5px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;pointer-events:none}
@@ -1162,7 +1163,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-07 18:08';
+const APP_VERSION='2026-11-07 18:31';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1472,59 +1473,65 @@ function holdRepeat(b,fire){
 const coarse=()=>matchMedia('(pointer:coarse)').matches;
 function attachScrub(inp,card,k,getO,apply){
   let st=null;
-  const end=()=>{if(!st)return;clearTimeout(st.timer);cancelAnimationFrame(st.raf);st.els&&st.els.forEach(e=>e.remove());card.classList.remove('scrub-card');inp.classList.remove('scrub-on');st=null};
+  const end=()=>{if(!st)return;clearTimeout(st.timer);cancelAnimationFrame(st.raf);st.els&&st.els.forEach(e=>e.remove());
+    removeEventListener('touchmove',move,{capture:true});removeEventListener('touchend',up,{capture:true});removeEventListener('touchcancel',end,{capture:true});
+    document.documentElement.classList.remove('scrubbing');card.classList.remove('scrub-card');inp.classList.remove('scrub-on');st=null};
   inp.addEventListener('touchstart',e=>{
     if(!coarse()||inp.disabled||document.activeElement===inp||e.touches.length!==1||getO().future)return; // keyboard already open: native behaviour
     e.preventDefault(); // no native long-press selection; a tap focuses below
-    const t=e.touches[0];st={x:t.clientX,y:t.clientY,lastY:t.clientY,mode:'wait',t0:performance.now()};
+    end();const t=e.touches[0];st={x:t.clientX,y:t.clientY,lastY:t.clientY,mode:'wait',t0:performance.now()};
     const r=inp.getBoundingClientRect(),ring=document.createElement('div');ring.className='scrub-ring';
     Object.assign(ring.style,{left:r.left-5+'px',top:r.top-5+'px',width:r.width+10+'px',height:r.height+10+'px',opacity:0});document.body.appendChild(ring);st.els=[ring];
     const grow=()=>{if(!st||st.mode!=='wait')return;const p=(performance.now()-st.t0-120)/280;ring.style.opacity=p>0?1:0;ring.style.setProperty('--p',Math.max(0,Math.min(1,p))*100+'%');st.raf=requestAnimationFrame(grow)};st.raf=requestAnimationFrame(grow);
     st.timer=setTimeout(start,400);
+    // the whole page follows this finger until it lifts – so the drag works anywhere, not just over the field
+    addEventListener('touchmove',move,{capture:true,passive:false});addEventListener('touchend',up,{capture:true,passive:false});addEventListener('touchcancel',end,{capture:true});
   },{passive:false});
   function start(){
     if(!st||st.mode!=='wait')return;const o=getO();st.mode='scrub';cancelAnimationFrame(st.raf);st.els.forEach(e=>e.remove());
     st.v0=Number(inp.value)||0;st.v=st.v0;st.acc=0;st.hold=0;st.lt=performance.now();st.min=o.t[k]+o.pen[k];st.rest=o.owed[k];st.col=getComputedStyle(document.documentElement).getPropertyValue(EXVAR[k]).trim();
     if(navigator.vibrate)try{navigator.vibrate(15)}catch(_){}
-    const dim=document.createElement('div');dim.className='scrub-dim';const rul=document.createElement('div');rul.className='scrub-rul';const bub=document.createElement('div');bub.className='scrub-bub';
-    document.body.append(dim,rul,bub);st.els=[dim,rul,bub];card.classList.add('scrub-card');card.style.setProperty('--sc',st.col);inp.classList.add('scrub-on');
+    const dim=document.createElement('div');dim.className='scrub-dim';const rul=document.createElement('div');rul.className='scrub-rul';
+    document.body.append(dim,rul);st.els=[dim,rul];document.documentElement.classList.add('scrubbing');card.classList.add('scrub-card');card.style.setProperty('--sc',st.col);inp.classList.add('scrub-on');
+    // the ruler is placed once, left of the field (away from the thumb), and stays put; the scale scrolls through its centre
+    const r=inp.getBoundingClientRect(),W=74,H=Math.min(innerHeight-16,300);
+    st.W=W;st.H=H;Object.assign(rul.style,{left:Math.max(6,r.left-W-6)+'px',top:Math.max(8,Math.min(innerHeight-8-H,r.top+r.height/2-H/2))+'px',width:W+'px',height:H+'px'});
     draw();
   }
   function draw(){
-    const r=inp.getBoundingClientRect(),[dim,rul,bub]=st.els,v=st.v,snap=v===st.min?'Min · dluh neporoste':v===st.rest?'Rest · vše splněno':'';
-    const d=v-st.v0;bub.innerHTML=`<b>${v}</b>`+(snap?`<span class="tag">${snap}</span>`:`<small>${d>=0?'▲ +':'▼ '}${d} · zbývá ${Math.max(0,st.rest-v)}</small>`);
-    bub.style.left=r.left+r.width/2+'px';bub.style.top=r.top-8+'px';
-    const W=80,H=Math.min(innerHeight-16,320),fy=st.lastY,top=Math.max(8,Math.min(innerHeight-8-H,fy-H/2)),PX=3,yv=x=>fy-top+(v-x)*PX;
+    const rul=st.els[1],v=st.v,W=st.W,H=st.H,C=H/2,PX=3,yv=x=>C+(v-x)*PX,BH=40;
+    const snap=v===st.min?'Min':v===st.rest?'Rest':'',d=v-st.v0,cc=snap?'var(--good)':st.col;
     let s=`<svg width="${W}" height="${H}" aria-hidden="true">`;
-    for(let x=Math.max(0,Math.floor((v-H/PX)/5)*5);x<=v+H/PX;x+=5){const y=yv(x);if(y<0||y>H)continue;const big=x%10===0;
-      s+=`<line x1="${W-(big?22:12)}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--text2)" stroke-width="${big?1.4:1}"/>`;
-      if(big&&[st.min,st.rest,v].every(m=>Math.abs(yv(m)-y)>12)&&y>24&&y<H-24)s+=`<text x="${W-26}" y="${y+4}" text-anchor="end">${x}</text>`}
+    for(let x=Math.max(0,Math.floor((v-H/PX)/5)*5);x<=v+H/PX;x+=5){const y=yv(x);if(y<0||y>H||Math.abs(y-C)<BH/2+2)continue;const big=x%10===0;
+      s+=`<line x1="${W-(big?20:11)}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--text2)" stroke-width="${big?1.4:1}"/>`;
+      if(big&&[st.min,st.rest].every(m=>Math.abs(yv(m)-y)>12)&&y>24&&y<H-24)s+=`<text x="${W-24}" y="${y+4}" text-anchor="end">${x}</text>`}
     for(const [x,l,c] of [[st.min,'Min','var(--good)'],[st.rest,'Rest','var(--remText)']]){if(x===v||x<=0)continue;const y=yv(x);
-      if(y>=6&&y<=H-6)s+=`<rect x="0" y="${y-8}" width="${W}" height="16" fill="${c}" opacity=".14"/><line x1="${W-22}" x2="${W}" y1="${y}" y2="${y}" stroke="${c}" stroke-width="2.5"/><rect x="2" y="${y-8}" width="${W-26}" height="16" rx="5" fill="var(--surface)"/><text x="5" y="${y+4}" style="fill:${c};font-weight:700;font-size:11px">${l} ${x}</text>`;
+      if(Math.abs(y-C)<BH/2+4)continue;
+      if(y>=6&&y<=H-6)s+=`<rect x="0" y="${y-8}" width="${W}" height="16" fill="${c}" opacity=".14"/><line x1="${W-20}" x2="${W}" y1="${y}" y2="${y}" stroke="${c}" stroke-width="2.5"/><rect x="2" y="${y-8}" width="${W-24}" height="16" rx="5" fill="var(--surface)"/><text x="5" y="${y+4}" style="fill:${c};font-weight:700;font-size:11px">${l} ${x}</text>`;
       else s+=`<rect x="0" y="${y<6?0:H-20}" width="${W}" height="20" fill="var(--surface)"/><text x="${W/2}" y="${y<6?14:H-6}" text-anchor="middle" style="fill:${c};font-weight:700;font-size:10px">${y<6?'▲':'▼'} ${l} ${x}</text>`}
-    const cc=snap?'var(--good)':st.col;s+=`<line x1="0" x2="${W}" y1="${fy-top}" y2="${fy-top}" stroke="${cc}" stroke-width="3"/><path d="M0,${fy-top-7} L8,${fy-top} L0,${fy-top+7}Z" fill="${cc}"/></svg>`;
-    rul.innerHTML=s;Object.assign(rul.style,{left:Math.min(r.right+8,innerWidth-W-10)+'px',top:top+'px',width:W+'px',height:H+'px'});
+    // centre band: the current value, large, with the change (or Min / Rest) under it
+    s+=`<rect x="0" y="${C-BH/2}" width="${W}" height="${BH}" fill="${cc}"/><text x="${W/2}" y="${C+4}" text-anchor="middle" style="fill:#fff;font-size:22px;font-weight:700">${v}</text>`+
+       `<text x="${W/2}" y="${C+16}" text-anchor="middle" style="fill:#fff;font-size:10px;font-weight:600">${snap||(d>=0?'▲ +':'▼ ')+d}</text></svg>`;
+    rul.innerHTML=s;
   }
-  inp.addEventListener('touchmove',e=>{
-    if(!st)return;e.preventDefault();const t=e.touches[0],now=performance.now();
+  function move(e){
+    if(!st)return;e.preventDefault();const t=[...e.touches][0];if(!t)return;const now=performance.now();
     if(st.mode==='wait'){ // moved before the hold completed: it was a scroll, not a hold
       if(Math.abs(t.clientY-st.y)>8||Math.abs(t.clientX-st.x)>8){clearTimeout(st.timer);cancelAnimationFrame(st.raf);st.els.forEach(x=>x.remove());st.els=[];st.mode='scroll'}
     }
     if(st.mode==='scroll'){scrollBy(0,st.lastY-t.clientY);st.lastY=t.clientY;return}
     if(st.mode!=='scrub')return;
     const dpx=st.lastY-t.clientY,dt=Math.max(1,now-st.lt);st.lastY=t.clientY;st.lt=now;
-    if(st.hold>0){st.hold-=Math.abs(dpx);draw();return}            // resting on Min / Rest for a moment
+    if(st.hold>0){st.hold-=Math.abs(dpx);return}                 // resting on Min / Rest for a moment
     const speed=Math.abs(dpx)/dt,f=Math.min(20,1+Math.max(0,speed-0.3)*12); // faster finger → bigger jumps
     st.acc+=dpx/6*f;let nv=Math.max(0,Math.round(st.v0+st.acc));
     for(const s of [st.min,st.rest])if(s>0&&((st.v<s&&nv>=s)||(st.v>s&&nv<=s))){nv=s;st.acc=s-st.v0;st.hold=18;if(navigator.vibrate)try{navigator.vibrate(25)}catch(_){}break}
-    if(nv!==st.v){st.v=nv;apply(nv)}
-    draw();
-  },{passive:false});
-  inp.addEventListener('touchend',e=>{
+    if(nv!==st.v){st.v=nv;apply(nv);draw()}
+  }
+  function up(e){
     if(!st)return;e.preventDefault();const m=st.mode;end();
     if(m==='wait'){inp.focus();try{inp.select()}catch(_){}}           // a plain tap: keyboard as before
-  },{passive:false});
-  inp.addEventListener('touchcancel',end);
+  }
   inp.addEventListener('contextmenu',e=>{if(coarse())e.preventDefault()});
 }
 function updateDay(){
