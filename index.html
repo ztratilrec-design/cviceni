@@ -188,6 +188,7 @@ h2:first-child{margin-top:4px}
 .dot{width:10px;height:10px;border-radius:3px;flex:none}
 .exi{display:inline-block;width:1.3em;height:1.3em;vertical-align:-.3em;margin-left:.35em;flex:none}
 .exi svg{display:block;width:100%;height:100%}
+.exi{pointer-events:none}
 .nm .exi{width:22px;height:22px;margin-left:6px}
 #histTable th .exi{width:18px;height:18px;vertical-align:-4px}
 .exname{font-weight:650;font-size:16px}
@@ -1229,7 +1230,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 17:28';
+const APP_VERSION='2026-11-08 18:19';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1250,7 +1251,7 @@ function updateVersion(){
   cog.title=VER.state==='update'?'Nastavení – je k dispozici nová verze':'Nastavení';
 }
 /* what's new: CHANGELOG.md is built into the page; after an update the new entries pop up once */
-const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Den – dnešní nesplněné cviky** mají kartu podbarvenou barvou cviku; po splnění cíle se karta vrátí do běžné podoby.\n- **Výraznější aktivní karta** – silnější modrý proužek, modrý název a jemné podbarvení.\n- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
+const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Odměna za splnění** – po ✓ panáček u cviku třikrát zacvičí (klik, sed-leh, dřep, shyb); aplikaci lze mezitím normálně používat.\n- **Den – dnešní nesplněné cviky** mají kartu podbarvenou barvou cviku; po splnění cíle se karta vrátí do běžné podoby.\n- **Výraznější aktivní karta** – silnější modrý proužek, modrý název a jemné podbarvení.\n- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
 const USED_BEFORE=['tab','autosave','range','theme'].some(k=>ls.get(k)!=null); // checked at start, before this visit changes anything
 const CL=(()=>{const out=[];let cur=null;for(const ln of CHANGELOG_MD.split(/\r?\n/)){
   if(ln.startsWith('## ')){cur={id:ln.slice(3).trim(),items:[]};out.push(cur)}else if(cur&&/^\s*- /.test(ln))cur.items.push(ln.replace(/^\s*- /,''));else if(cur&&cur.items.length&&/^\s{2,}\S/.test(ln))cur.items[cur.items.length-1]+=' '+ln.trim()}
@@ -1495,26 +1496,48 @@ mainEl.addEventListener('touchcancel',()=>{swipe=null},{passive:true});
 /* ---------- exercise pictograms (approved drafts; single colour = currentColor) ---------- */
 const PS='stroke="currentColor" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"';
 const PF='stroke="currentColor" stroke-width="3" stroke-linecap="round"';
-const PICTO={
-  // Kliky – push-up, plank from the side
-  kliky:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="52" cy="24" r="6" fill="currentColor"/>
-    <path ${PS} d="M44 31 L9 45"/><path ${PS} d="M44 31 L45 49"/><line ${PF} x1="3" y1="53" x2="61" y2="53"/></svg>`,
-  // S-L – sit-up: knees bent, torso coming up, arms reaching to the knees
-  sl:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="15" cy="21" r="6" fill="currentColor"/>
-    <path ${PS} d="M20 29 L29 47 L42 33 L53 47"/><path ${PS} d="M22 31 L37 25"/><line ${PF} x1="3" y1="53" x2="61" y2="53"/></svg>`,
-  // Dřepy – squat from the side, arms forward
-  drepy:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="33" cy="10" r="6" fill="currentColor"/>
-    <path ${PS} d="M30 19 L20 36 L38 39 L33 53 L41 53"/><path ${PS} d="M30 21 L50 24"/><line ${PF} x1="3" y1="59" x2="61" y2="59"/></svg>`,
-  // Shyby – pull-up from the front, chin at the bar
-  shyby:`<svg viewBox="0 0 64 64" aria-hidden="true"><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="4" y1="6" x2="60" y2="6"/>
-    <circle cx="32" cy="16" r="6" fill="currentColor"/>
-    <path ${PS} d="M17 6 L14 20 L25 25 L39 25 L50 20 L47 6"/><path ${PS} d="M32 25 L32 42 M32 42 L26 58 M32 42 L38 58"/></svg>`,
+// Each pictogram has two poses with the same points: A = the static icon, B = the other end of a rep (used to animate a finished exercise).
+const POSES={
+  kliky:{ // A: plank · B: bottom of the push-up (hands and feet stay)
+    A:{head:[52,24],paths:[[[44,31],[9,45]],[[44,31],[44.5,40],[45,49]]]},
+    B:{head:[52.5,37],paths:[[[44,43],[9,47]],[[44,43],[36,36],[45,49]]]},floor:53},
+  sl:{ // A: sitting up to the knees · B: lying on the ground
+    A:{head:[15,21],paths:[[[20,29],[29,47],[42,33],[53,47]],[[22,31],[37,25]]]},
+    B:{head:[7,44],paths:[[[14,46],[29,47],[42,33],[53,47]],[[15,45],[24,41]]]},floor:53},
+  drepy:{ // A: squat · B: deeper squat
+    A:{head:[33,10],paths:[[[30,19],[20,36],[38,39],[33,53],[41,53]],[[30,21],[50,24]]]},
+    B:{head:[33,19],paths:[[[29,28],[17,44],[39,43],[33,53],[41,53]],[[29,30],[50,32]]]},floor:59},
+  shyby:{ // A: chin at the bar · B: head over the bar, legs higher
+    A:{head:[32,16],paths:[[[17,6],[14,20],[25,25],[39,25],[50,20],[47,6]],[[32,25],[32,42]],[[32,42],[26,58]],[[32,42],[38,58]]]},
+    B:{head:[32,1.5],paths:[[[17,6],[12,19],[25,15],[39,15],[52,19],[47,6]],[[32,15],[32,32]],[[32,32],[26,48]],[[32,32],[38,48]]]},bar:6},
 };
+function pictoSvg(key,t=0){ // t = 0 … 1 between pose A and B
+  const P=POSES[key],L=(a,b)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],f=v=>+v.toFixed(2),h=L(P.A.head,P.B.head);
+  let s=`<svg viewBox="0 0 64 64" aria-hidden="true"${t?' overflow="visible"':''}>`;
+  if(P.bar&&h[1]>=12)s+=`<line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="4" y1="${P.bar}" x2="60" y2="${P.bar}"/>`;
+  s+=`<circle cx="${f(h[0])}" cy="${f(h[1])}" r="6" fill="currentColor"/>`;
+  s+=P.A.paths.map((ap,i)=>`<path ${PS} d="M${ap.map((q,j)=>L(q,P.B.paths[i][j]).map(f).join(' ')).join(' L')}"/>`).join('');
+  if(P.floor)s+=`<line ${PF} x1="3" y1="${P.floor}" x2="61" y2="${P.floor}"/>`;
+  if(P.bar&&h[1]<12)s+=`<line stroke="var(--surface)" stroke-width="8" stroke-linecap="round" x1="${f(h[0]-8)}" y1="${P.bar}" x2="${f(h[0]+8)}" y2="${P.bar}"/><line stroke="currentColor" stroke-width="4" stroke-linecap="round" x1="4" y1="${P.bar}" x2="60" y2="${P.bar}"/>`; // head over the bar: bar in front of the neck
+  return s+'</svg>';
+}
+const PICTO=Object.fromEntries(Object.keys(POSES).map(k=>[k,pictoSvg(k,0)]));
+// A finished exercise: its icon does 3 reps once (runs per frame on one small icon only – the app stays fully usable)
+function cheerIcon(card){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const el=card.querySelector('.nm .exi[data-pk]');if(!el||el._anim)return;const key=el.dataset.pk,REP=1000,N=3,t0=performance.now();el._anim=true;
+  const step=now=>{
+    if(!el.isConnected){el._anim=false;return}                          // card redrawn meanwhile: just stop
+    const x=(now-t0)/REP;if(x>=N){el.innerHTML=PICTO[key];el._anim=false;return}
+    const ph=x-Math.floor(x),u=ph<.5?ph*2:2-ph*2,t=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2; // down and up, eased
+    el.innerHTML=pictoSvg(key,t);requestAnimationFrame(step);
+  };requestAnimationFrame(step);
+}
 const PICTO_ORDER=['kliky','sl','drepy','shyby'];
 function exIcon(k){ // by exercise name, falling back to column order
   const n=(S.book&&S.book.names[k]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
   const key={kliky:'kliky',sl:'sl',drepy:'drepy',shyby:'shyby'}[n]||PICTO_ORDER[k];
-  return PICTO[key]?`<span class="exi" aria-hidden="true">${PICTO[key]}</span>`:'';
+  return PICTO[key]?`<span class="exi" data-pk="${key}" aria-hidden="true">${PICTO[key]}</span>`:'';
 }
 /* ---------- Day ---------- */
 function exColor(k){return 'var('+EXVAR[k]+')'}
@@ -1664,7 +1687,7 @@ function updateDay(){
     const ok=o.remDisp[k]==='✓'||o.rem[k]===0;
     const justCleared=ok&&c.dataset.ok==='0';c.dataset.ok=ok?'1':'0'; // only a change made right now, not opening a day
     rem.textContent=ok?'✓':fmt(o.rem[k]);rem.className='bignum num'+(ok?' ok':'');
-    if(justCleared){void rem.offsetWidth;rem.classList.add('pop');c.classList.remove('cleared');void c.offsetWidth;c.classList.add('cleared')}
+    if(justCleared){void rem.offsetWidth;rem.classList.add('pop');c.classList.remove('cleared');void c.offsetWidth;c.classList.add('cleared');setTimeout(()=>cheerIcon(c),900)} // ✓ pop + glow, then the icon does 3 reps
     lbl.textContent=ok?'splněno':'zbývá';
     c.querySelector('[data-owed]').innerHTML=`<b>${fmt(o.owed[k])}</b> = cíl ${fmt(o.t[k])} + z min. ${fmt(o.carry[k])} + pokuta ${fmt(o.pen[k])}`;
     c.querySelector('[data-bar]').style.width=Math.min(100,o.owed[k]>0?done/o.owed[k]*100:100)+'%';

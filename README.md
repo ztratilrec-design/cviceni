@@ -67,6 +67,7 @@ Zápis hodnot pro vybraný den.
   - **Min** – doplní hodnotu na minimum (cíl + pokuta),
   - **Rest** – doplní vše, co zbývá (včetně dluhu z minula).
 - U **dneška** je karta každého dosud nesplněného cviku podbarvená jeho barvou (po splnění zmizí). Lišty nesplněných cviků navíc krátce zablikají – po otevření aplikace, při návratu na kartu Den nebo do aplikace.
+- Po splnění cíle (✓) piktogram cviku třikrát „zacvičí“.
 - Budoucí dny zobrazují jen denní cíl.
 
 ---

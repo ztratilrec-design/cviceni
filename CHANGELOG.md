@@ -1,6 +1,7 @@
 # Co je nového
 
 ## 8. 11. 2026
+- **Odměna za splnění** – po ✓ panáček u cviku třikrát zacvičí (klik, sed-leh, dřep, shyb); aplikaci lze mezitím normálně používat.
 - **Den – dnešní nesplněné cviky** mají kartu podbarvenou barvou cviku; po splnění cíle se karta vrátí do běžné podoby.
 - **Výraznější aktivní karta** – silnější modrý proužek, modrý název a jemné podbarvení.
 - **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).
