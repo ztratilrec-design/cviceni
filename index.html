@@ -316,6 +316,17 @@ main.hist{padding-bottom:16px}
 .ttile .sp svg{display:block}
 @media (max-width:560px){.ttiles{grid-template-columns:1fr 1fr}}
 .mwrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+#wdTable{border-collapse:separate;border-spacing:3px;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
+#wdTable th{font-size:12.5px;font-weight:600;color:var(--text2);padding:4px 2px 2px}
+#wdTable th.we{color:var(--muted)}
+#wdTable th.ex{text-align:left;width:118px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wdTable th.ex .exi{width:15px;height:15px}
+#wdTable th.ex .sm{display:none}
+#wdTable td{white-space:nowrap;text-align:center;border-radius:7px;padding:6px 2px 5px;cursor:pointer;font-size:13.5px;font-weight:650;line-height:1.15}
+#wdTable td small{display:block;font-size:10.5px;font-weight:500;opacity:.85}
+#wdTable td.best{box-shadow:inset 0 0 0 2px var(--text)}
+#wdTable td.nodata{background:var(--surface2);color:var(--muted);cursor:default}
+@media (max-width:560px){#wdTable .pc,#wdTable th.ex .lg{display:none}#wdTable th.ex .sm{display:inline}#wdTable th.ex{width:64px}#wdTable th.ex .exi{display:none}#wdTable td{font-size:12px;padding:7px 1px}#wdTable td small{display:none}}
 #monthTable{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
 #monthTable th,#monthTable td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
 #monthTable th{font-weight:600;color:var(--text2);font-size:12.5px}
@@ -553,6 +564,9 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
     <div class="chartgrid" id="backlogCharts"></div>
     <h2 id="monthsTitle">Po měsících</h2>
     <div class="mwrap"><table id="monthTable"></table></div>
+    <h2 id="wdTitle">Podle dne v týdnu</h2>
+    <div class="mwrap"><table id="wdTable"></table></div>
+    <p class="sub" id="wdNote" style="margin:6px 2px 0"></p>
     <h2 id="heatTitle">Kalendář: splněné cviky za den</h2>
     <div class="heatwrap" id="heat"></div>
     <div class="legend" id="heatLegend"></div>
@@ -1174,7 +1188,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 11:39';
+const APP_VERSION='2026-11-08 12:24';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1714,6 +1728,7 @@ function renderStats(){
     bc.appendChild(chartCard(name,k,el=>lineChart(el,pts,k)));
   });
   renderMonths();
+  renderWeekdays(from,to);
   renderHeat();
 }
 let TREND=[];
@@ -1739,6 +1754,32 @@ function drawTrend(){
       `<circle cx="${x(n-1)}" cy="${y(ma[n-1])}" r="2.8" fill="${exColor(k)}"/></svg>`;
   });
 }
+const WD_LONG=['pondělí','úterý','středa','čtvrtek','pátek','sobota','neděle'];
+function renderWeekdays(from,to){ // per weekday: average done as % of the daily target, and how often it was met (today excluded – still in progress)
+  const B=S.book,T0=todayISO(),R=CALC.filter(o=>!o.future&&o.iso<T0&&o.iso>=from&&o.iso<=to);
+  const by=[0,1,2,3,4,5,6].map(d=>R.filter(o=>dow(o.iso)===d));
+  $('#wdTitle').innerHTML='Podle dne v týdnu <span class="h2sub">– průměr v % denního cíle, ✓ = kolikrát splněno (bez dneška)</span>';
+  const cellColor=(col,txt,q)=>{const a=Math.max(.1,Math.min(1,q/1.2));return `background:color-mix(in srgb,${col} ${Math.round(a*100)}%,var(--surface));color:${a>.55?txt:'var(--text)'}`};
+  const rowAvg=[];
+  let h='<thead><tr><th class="ex"></th>'+DAY_ABBR.map((d,i)=>`<th class="${i>=5?'we':''}">${d}</th>`).join('')+'</tr></thead><tbody>';
+  B.names.forEach((n,k)=>{
+    const vals=by.map(D=>D.length?{q:D.reduce((a,o)=>a+(Number(o.done[k])||0)/o.t[k],0)/D.length,avg:D.reduce((a,o)=>a+(Number(o.done[k])||0),0)/D.length,ok:D.filter(o=>o.remDisp[k]==='✓'||o.rem[k]===0).length,n:D.length}:null);
+    rowAvg.push(vals);const best=Math.max(...vals.filter(Boolean).map(v=>v.q));
+    h+=`<tr><th class="ex"><span class="dot" style="display:inline-block;background:${exColor(k)};margin-right:5px"></span>${esc(n)}${exIcon(k)}</th>`+vals.map((v,d)=>!v?'<td class="nodata">–</td>':
+      `<td class="${v.q===best&&R.length>=14?'best':''}" style="${cellColor(exColor(k),`var(--ex${k+1}t)`,v.q)}" data-tip="${esc(`<b>${n} · ${WD_LONG[d]}</b><br>průměr ${fmt(Math.round(v.avg))} (${Math.round(v.q*100)} % cíle)<br>splněno ${v.ok} z ${dny(v.n)}`)}">${Math.round(v.q*100)}<span class="pc"> %</span><small>✓ ${v.ok}/${v.n}</small></td>`).join('')+'</tr>';
+  });
+  const perf=by.map(D=>D.length?{q:D.filter(o=>o.clear).length/D.length,ok:D.filter(o=>o.clear).length,n:D.length}:null),pbest=Math.max(...perf.filter(Boolean).map(v=>v.q));
+  h+='<tr><th class="ex"><span class="lg">Perfektní dny</span><span class="sm">Vše ✓</span></th>'+perf.map((v,d)=>!v?'<td class="nodata">–</td>':
+    `<td class="${v.q===pbest&&R.length>=14?'best':''}" style="${cellColor('var(--good)','#fff',v.q*1.2)}" data-tip="${esc(`<b>Perfektní dny · ${WD_LONG[d]}</b><br>všechny 4 cviky splněny: ${v.ok} z ${dny(v.n)}`)}">${Math.round(v.q*100)}<span class="pc"> %</span><small>${v.ok}/${v.n}</small></td>`).join('')+'</tr></tbody>';
+  $('#wdTable').innerHTML=R.length?h:'<tbody><tr><td class="nodata" style="text-align:left;padding:10px">V tomto období zatím nejsou žádné dny.</td></tr></tbody>';
+  // strongest / weakest weekday: average over all exercises
+  const tot=[0,1,2,3,4,5,6].map(d=>rowAvg.every(r=>r[d])?rowAvg.reduce((a,r)=>a+r[d].q,0)/rowAvg.length:null),ok=tot.map((v,d)=>[v,d]).filter(x=>x[0]!=null).sort((a,b)=>b[0]-a[0]);
+  $('#wdNote').textContent=ok.length>=2&&R.length>=14?'Nejsilnější den: '+WD_LONG[ok[0][1]]+' ('+Math.round(ok[0][0]*100)+' %) · nejslabší: '+WD_LONG[ok[ok.length-1][1]]+' ('+Math.round(ok[ok.length-1][0]*100)+' %) – průměr všech cviků':R.length?'Pro porovnání dnů je potřeba aspoň 2 týdny – zvolte delší období.':'';
+}
+let wdTipT;
+$('#wdTable').addEventListener('click',e=>{const td=e.target.closest('td[data-tip]');if(!td)return;const r=td.getBoundingClientRect();showTip(td.dataset.tip,r.left+r.width/2,r.top);clearTimeout(wdTipT);wdTipT=setTimeout(hideTip,3000)});
+$('#wdTable').addEventListener('mousemove',e=>{const td=e.target.closest('td[data-tip]');if(!td){hideTip();return}showTip(td.dataset.tip,e.clientX,e.clientY)});
+$('#wdTable').addEventListener('mouseleave',hideTip);
 function renderMonths(){ // one row per month of the selected period's year (months up to today)
   const B=S.book,year=S.range.startsWith('y:')?S.range.slice(2):rangeBounds().to.slice(0,4);
   const D=CALC.filter(o=>!o.future&&o.iso.startsWith(year));

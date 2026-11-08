@@ -87,6 +87,7 @@ Měsíční tabulka v barvách původního listu: datum, den v týdnu a pro kaž
 - **Podle cviku** – průměr za den, splněné dny, pokuty, nejlepší den a zbývající dluh ke konci období.
 - **Grafy** *Hotovo za den* a *Zbývá* – po najetí / dotyku ukazují hodnoty pro konkrétní den.
 - **Po měsících** – přehled za rok; **kliknutím na měsíc** se nastaví jako filtr.
+- **Podle dne v týdnu** – heatmapa Po–Ne: průměr každého cviku v % denního cíle, kolikrát byl splněn, a podíl perfektních dnů; zvýrazněný je nejlepší den, pod tabulkou nejsilnější a nejslabší den. Klepnutím na buňku se zobrazí podrobnosti.
 - **Kalendář** – barva dne podle počtu splněných cviků; **kliknutím na den** se otevře v kartě **Den**.
 
 ---
