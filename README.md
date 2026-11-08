@@ -94,7 +94,7 @@ Měsíční tabulka v barvách původního listu: datum, den v týdnu a pro kaž
 
 ## Nastavení (⚙)
 
-OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok), **Nainstalovat aplikaci**, **verze aplikace** (*Nejnovější verze*, nebo klepnutím načíst novější – na ⚙ ji ohlásí zelená tečka) a **Ochrana soukromí**.
+OneDrive (připojit / vybrat jiný sešit / odpojit), **Autosave**, **Tmavé schéma**, **Přidat do .xlsx další rok** (nový list navazující na předchozí rok), **Nainstalovat aplikaci**, **Co je nového** (přehled změn; po aktualizaci se nové změny ukážou samy), **verze aplikace** (*Nejnovější verze*, nebo klepnutím načíst novější – na ⚙ ji ohlásí zelená tečka) a **Ochrana soukromí**.
 
 ---
 
@@ -110,3 +110,4 @@ Aplikace nemá vlastní server ani sledování; data zůstávají ve vašem seš
 | `manifest.webmanifest`, `icons/` | instalace jako aplikace, ikony |
 | `sw.js` | offline režim (při připojení se vždy načte nejnovější verze) |
 | `soukromi.html` | prohlášení o ochraně soukromí |
+| `CHANGELOG.md` | přehled změn (při sestavení se vloží do aplikace) |

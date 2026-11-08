@@ -105,6 +105,14 @@ button{cursor:pointer}
 .mi:has(input:disabled):hover,.mi:disabled:hover{background:none}
 .miic{width:18px;text-align:center;font-weight:700;font-size:18px;color:var(--accent);flex:none}
 .msep{height:1px;background:var(--border);margin:4px 6px}
+#news{border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);padding:18px 20px 16px;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+#news::backdrop{background:rgba(0,0,0,.35)}
+#news h2{margin:0 0 4px;font-size:17px}
+#news h3{margin:12px 0 4px;font-size:13.5px;color:var(--text2);font-weight:600}
+#news ul{margin:0;padding-left:18px;font-size:14px;line-height:1.45;color:var(--text2)}
+#news li{margin-bottom:6px}
+#news li b{color:var(--text)}
+#news form{display:flex;justify-content:flex-end;gap:8px;margin:10px 0 0;position:sticky;bottom:-16px;background:var(--surface);padding:10px 0 16px;margin-bottom:-16px;border-top:1px solid var(--grid)}
 #privacy{border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);padding:18px 20px 16px;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 #privacy::backdrop{background:rgba(0,0,0,.35)}
 #privacy h2{margin:0 0 10px;font-size:17px}
@@ -316,15 +324,18 @@ main.hist{padding-bottom:16px}
 .ttile .sp svg{display:block}
 @media (max-width:560px){.ttiles{grid-template-columns:1fr 1fr}}
 .mwrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
-#wdTable{border-collapse:separate;border-spacing:3px;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
+#wdTable{border-collapse:collapse;border-spacing:0;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
 #wdTable th{font-size:12.5px;font-weight:600;color:var(--text2);padding:4px 2px 2px}
 #wdTable th.we{color:var(--muted)}
 #wdTable th.ex{text-align:left;width:118px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #wdTable th.ex .exi{width:15px;height:15px}
 #wdTable th.ex .sm{display:none}
-#wdTable td{white-space:nowrap;text-align:center;border-radius:7px;padding:6px 2px 5px;cursor:pointer;font-size:13.5px;font-weight:650;line-height:1.15}
+#wdTable td{white-space:nowrap;text-align:center;border-radius:0;padding:6px 2px 5px;cursor:pointer;font-size:13.5px;font-weight:650;line-height:1.15}
 #wdTable td small{display:block;font-size:10.5px;font-weight:500;opacity:.85}
-#wdTable td.best{box-shadow:inset 0 0 0 2px var(--text)}
+#wdTable td.best{box-shadow:inset 0 0 0 2px var(--text);position:relative}
+#wdTable th{padding-bottom:5px}
+#wdTable th.ex{padding-left:10px}
+#wdTable tbody tr:last-child td{border-top:2px solid var(--surface)}
 #wdTable td.nodata{background:var(--surface2);color:var(--muted);cursor:default}
 @media (max-width:560px){#wdTable .pc,#wdTable th.ex .lg{display:none}#wdTable th.ex .sm{display:inline}#wdTable th.ex{width:64px}#wdTable th.ex .exi{display:none}#wdTable td{font-size:12px;padding:7px 1px}#wdTable td small{display:none}}
 #monthTable{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
@@ -488,6 +499,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
           <button class="mi" id="btnAddYear" type="button"><span class="miic" aria-hidden="true">+</span><span><b>Přidat do .xlsx další rok</b><small id="addYearNote"></small></span></button>
           <div class="msep"></div>
           <button class="mi" id="btnInstall" type="button" hidden><span class="miic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span><b>Nainstalovat aplikaci</b><small id="installNote"></small></span></button>
+          <button class="mi" id="btnNews" type="button"><span class="miic" aria-hidden="true">★</span><span><b>Co je nového</b><small id="newsNote"></small></span></button>
           <button class="mi" id="btnVersion" type="button"><span class="miic" id="verIc" aria-hidden="true">✓</span><span><b id="verTitle">Verze aplikace</b><small id="verNote"></small></span></button>
           <button class="mi" id="btnPrivacy" type="button"><span class="miic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/></svg></span><span><b>Ochrana soukromí</b><small>Jak aplikace zachází s vašimi daty</small></span></button>
         </div>
@@ -583,6 +595,11 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
     <li><b>OneDrive (volitelné).</b> Při připojení se přihlašujete přímo u Microsoftu – aplikace vaše heslo nikdy nevidí. Získá jen oprávnění číst a zapisovat soubory ve vašem OneDrive a používá ho výhradně k otevření a uložení sešitu, který si sami vyberete. Přihlášení zůstává jen v tomto prohlížeči; smažete ho přes ⚙ → Odpojit OneDrive. Přístup aplikace můžete kdykoli zrušit také na stránce account.live.com/consent/Manage.</li>
   </ul>
   <form method="dialog"><button class="btn" value="cancel" id="privCancel" hidden>Zrušit</button><button class="btn primary" value="ok" id="privOk">Zavřít</button></form>
+</dialog>
+<dialog id="news" aria-labelledby="newsTitle">
+  <h2 id="newsTitle" tabindex="-1" autofocus style="outline:none">Co je nového</h2>
+  <div id="newsBody"></div>
+  <form method="dialog"><button class="btn" value="all" id="newsAll" type="button">Celý přehled změn</button><button class="btn primary" value="ok">Zavřít</button></form>
 </dialog>
 <dialog id="askMerge" aria-labelledby="askMergeQ">
   <p class="q" id="askMergeQ" tabindex="-1" autofocus></p>
@@ -1188,7 +1205,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 12:24';
+const APP_VERSION='2026-11-08 15:45';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1208,6 +1225,31 @@ function updateVersion(){
   let dot=cog.querySelector('.cogdot');if(VER.state==='update'&&!dot){dot=document.createElement('span');dot.className='cogdot';cog.appendChild(dot)}else if(VER.state!=='update'&&dot)dot.remove();
   cog.title=VER.state==='update'?'Nastavení – je k dispozici nová verze':'Nastavení';
 }
+/* what's new: CHANGELOG.md is built into the page; after an update the new entries pop up once */
+const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne: průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
+const USED_BEFORE=['tab','autosave','range','theme'].some(k=>ls.get(k)!=null); // checked at start, before this visit changes anything
+const CL=(()=>{const out=[];let cur=null;for(const ln of CHANGELOG_MD.split(/\r?\n/)){
+  if(ln.startsWith('## ')){cur={id:ln.slice(3).trim(),items:[]};out.push(cur)}else if(cur&&/^\s*- /.test(ln))cur.items.push(ln.replace(/^\s*- /,''));else if(cur&&cur.items.length&&/^\s{2,}\S/.test(ln))cur.items[cur.items.length-1]+=' '+ln.trim()}
+  out.forEach(e=>{let h=0;for(const ch of e.items.join('\n'))h=(h*31+ch.charCodeAt(0))|0;e.hash=String(h)});return out})();
+const mdInline=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>');
+function showNews(entries,isUpdate){
+  if(!entries.length)return;
+  $('#newsTitle').textContent=isUpdate?'Co je nového v této verzi':'Co je nového';
+  $('#newsBody').innerHTML=entries.map(e=>`<h3>${esc(e.id)}</h3><ul>${e.items.map(i=>`<li>${mdInline(i)}</li>`).join('')}</ul>`).join('');
+  $('#newsAll').hidden=entries.length>=CL.length;const d=$('#news');if(!d.open)d.showModal();
+}
+$('#newsAll').onclick=()=>showNews(CL,false);
+$('#news').addEventListener('close',()=>{try{ls.set('clSeen',JSON.stringify(Object.fromEntries(CL.map(e=>[e.id,e.hash]))))}catch(_){}});
+$('#btnNews').onclick=()=>{openMenu(false);showNews(CL,false)};
+$('#newsNote').textContent=CL.length?'Přehled změn · poslední '+CL[0].id:'Přehled změn';
+setTimeout(()=>{ // after an update: show what changed since this browser last saw the list (first run: just remember it)
+  if(!CL.length)return;let seen=null;try{seen=JSON.parse(ls.get('clSeen')||'null')}catch(_){}
+  if(!seen){ // never seen the list: a new user gets nothing; someone who used the app before this feature existed gets the newest entry
+    const before=USED_BEFORE;
+    seen=Object.fromEntries(CL.slice(before?1:0).map(e=>[e.id,e.hash]));ls.set('clSeen',JSON.stringify(seen));if(!before)return}
+  const fresh=CL.filter(e=>seen[e.id]!==e.hash);
+  if(fresh.length&&!document.querySelector('dialog[open]'))showNews(fresh,true);
+},1200);
 $('#btnVersion').onclick=()=>{if(VER.state==='update'){persistEdits();location.reload();return}checkVersion(true)};
 updateVersion();setTimeout(()=>checkVersion(true),3000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkVersion(false)});
