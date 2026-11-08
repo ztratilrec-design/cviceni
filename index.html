@@ -408,6 +408,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
   .statbar{margin-top:-6px}
   #dayBanner .banner{padding:4px 10px;font-size:12px;margin-bottom:5px}
   #tab-day{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px}
+  .daybar{display:contents} /* landscape: date bar, title and status stay one row with the rest */
   #dayBanner,#cards{flex-basis:100%}
   #tab-day .daynav{margin:0;flex-wrap:nowrap}
   .daynav .btn{min-width:42px;min-height:42px}
@@ -474,6 +475,11 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
   .step{width:38px;min-width:38px}
   .quick{gap:2px}
 }
+.daybar{margin:0 -16px;padding:0 16px}
+@media (max-width:1023px) and (min-height:521px){ /* phone held upright / tablet: date, day and "Splněno" stay pinned below the header */
+  .daybar{position:sticky;top:var(--topH,0px);z-index:15;background:var(--page);margin-top:-8px;padding-top:8px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px}
+}
+html{scroll-padding-top:calc(var(--topH,0px) + var(--dayH,0px) + 8px)} /* Enter / focus scrolls fields clear of the pinned bars */
 @media print{.top,.tabs,.opts{display:none}}
 </style>
 </head>
@@ -531,6 +537,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
 
   <section id="tab-day" hidden>
     <div id="dayBanner"></div>
+    <div class="daybar">
     <div class="daynav">
       <button class="btn" id="prevDay" aria-label="Předchozí den">‹</button>
       <input type="date" id="dayPick" aria-label="Den">
@@ -539,6 +546,7 @@ html,body{overscroll-behavior-y:contain} /* our own pull-to-refresh instead of t
     </div>
     <div class="daytitle" id="dayTitle"></div>
     <div id="dayStatus"></div>
+    </div>
     <div class="cards" id="cards"></div>
   </section>
 
@@ -1205,7 +1213,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 15:45';
+const APP_VERSION='2026-11-08 16:00';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1226,7 +1234,7 @@ function updateVersion(){
   cog.title=VER.state==='update'?'Nastavení – je k dispozici nová verze':'Nastavení';
 }
 /* what's new: CHANGELOG.md is built into the page; after an update the new entries pop up once */
-const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne: průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
+const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
 const USED_BEFORE=['tab','autosave','range','theme'].some(k=>ls.get(k)!=null); // checked at start, before this visit changes anything
 const CL=(()=>{const out=[];let cur=null;for(const ln of CHANGELOG_MD.split(/\r?\n/)){
   if(ln.startsWith('## ')){cur={id:ln.slice(3).trim(),items:[]};out.push(cur)}else if(cur&&/^\s*- /.test(ln))cur.items.push(ln.replace(/^\s*- /,''));else if(cur&&cur.items.length&&/^\s{2,}\S/.test(ln))cur.items[cur.items.length-1]+=' '+ln.trim()}
@@ -1406,6 +1414,7 @@ function setTopH(){ // height of the pinned top bar (0 when it scrolls away, e.g
   const t=$('.top');document.documentElement.style.setProperty('--topH',(getComputedStyle(t).position==='sticky'?t.offsetHeight:0)+'px');
 }
 addEventListener('resize',()=>{if(S.book)setTopH()});
+{const db=$('.daybar');if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty('--dayH',(getComputedStyle(db).position==='sticky'?db.offsetHeight:0)+'px')).observe(db)}
 let LAST_TAB=null;
 function renderTab(){
   compute();

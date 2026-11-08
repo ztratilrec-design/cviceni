@@ -1,8 +1,9 @@
 # Co je nového
 
 ## 8. 11. 2026
+- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.
 - **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.
-- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne: průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.
+- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.
 - **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.
 
 ## 7. 11. 2026
