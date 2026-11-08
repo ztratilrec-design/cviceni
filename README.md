@@ -66,7 +66,7 @@ Zápis hodnot pro vybraný den.
   - **+10 / +25** (u shybů **+5 / +10**) – přičte k hodnotě,
   - **Min** – doplní hodnotu na minimum (cíl + pokuta),
   - **Rest** – doplní vše, co zbývá (včetně dluhu z minula).
-- U **dneška** lišty dosud nesplněných cviků krátce zablikají – po otevření aplikace, při návratu na kartu Den nebo do aplikace.
+- U **dneška** je karta každého dosud nesplněného cviku podbarvená jeho barvou (po splnění zmizí). Lišty nesplněných cviků navíc krátce zablikají – po otevření aplikace, při návratu na kartu Den nebo do aplikace.
 - Budoucí dny zobrazují jen denní cíl.
 
 ---

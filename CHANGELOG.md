@@ -1,6 +1,7 @@
 # Co je nového
 
 ## 8. 11. 2026
+- **Den – dnešní nesplněné cviky** mají kartu podbarvenou barvou cviku; po splnění cíle se karta vrátí do běžné podoby.
 - **Výraznější aktivní karta** – silnější modrý proužek, modrý název a jemné podbarvení.
 - **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).
 - **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.
