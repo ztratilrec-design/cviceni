@@ -154,7 +154,9 @@ button{cursor:pointer}
 .btn.sm{padding:3px 9px;min-height:28px;font-size:13px}
 .tabs{max-width:1000px;margin:0 auto;padding:0 16px;display:flex;gap:4px}
 .tabs button{border:0;background:none;padding:8px 12px;border-bottom:2px solid transparent;color:var(--text2);font-weight:500}
-.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
+.tabs button{position:relative;border-radius:8px 8px 0 0}
+.tabs button.on{color:var(--accentText);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.tabs button.on::after{content:"";position:absolute;left:4px;right:4px;bottom:-2px;height:4px;border-radius:3px 3px 0 0;background:var(--accent)} /* thicker stripe, drawn over the button's own 2px edge: no size change */
 main{max-width:1000px;margin:0 auto;padding:16px 16px 64px}
 h2{font-size:15px;margin:24px 0 10px;font-weight:650}
 h2:first-child{margin-top:4px}
@@ -1219,7 +1221,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 16:23';
+const APP_VERSION='2026-11-08 16:51';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1240,7 +1242,7 @@ function updateVersion(){
   cog.title=VER.state==='update'?'Nastavení – je k dispozici nová verze':'Nastavení';
 }
 /* what's new: CHANGELOG.md is built into the page; after an update the new entries pop up once */
-const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
+const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Výraznější aktivní karta** – silnější modrý proužek, modrý název a jemné podbarvení.\n- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
 const USED_BEFORE=['tab','autosave','range','theme'].some(k=>ls.get(k)!=null); // checked at start, before this visit changes anything
 const CL=(()=>{const out=[];let cur=null;for(const ln of CHANGELOG_MD.split(/\r?\n/)){
   if(ln.startsWith('## ')){cur={id:ln.slice(3).trim(),items:[]};out.push(cur)}else if(cur&&/^\s*- /.test(ln))cur.items.push(ln.replace(/^\s*- /,''));else if(cur&&cur.items.length&&/^\s{2,}\S/.test(ln))cur.items[cur.items.length-1]+=' '+ln.trim()}
