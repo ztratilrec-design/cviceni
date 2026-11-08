@@ -882,24 +882,31 @@ async function writeHandle(bytes){ // write + explicit truncate, then report wha
   const w=await S.handle.createWritable({keepExistingData:false});await w.write(bytes);try{await w.truncate(bytes.length)}catch(_){}await w.close();
   return S.handle.getFile();
 }
+// entries going into a save are remembered; once it is written only THOSE are cleared – anything typed meanwhile stays pending and is saved next
+const editSnap=()=>JSON.parse(JSON.stringify(S.edits));
+function dropSaved(snap){
+  for(const iso in snap)for(const k in snap[iso])if(S.edits[iso]&&Object.is(S.edits[iso][k],snap[iso][k]))delete S.edits[iso][k];
+  for(const iso in S.edits)if(!Object.keys(S.edits[iso]).length)delete S.edits[iso];
+}
 async function save(opts={}){
-  if(!S.book||S.saving)return;
+  if(!S.book)return;
+  if(S.saving){S.again=true;return} // a save is running: run another one right after it
   if(opts.quiet&&S.handle){ // automatic save: never fall back to a download – just wait for "Připojit znovu"
     let p=null;try{p=await S.handle.queryPermission({mode:'readwrite'})}catch(_){}
     if(p!=='granted'){S.perm=p;renderSaveState();return}
   }
   if(opts.quiet&&S.od&&S.odNeedLogin)return; // automatic save waits for "Připojit"
-  S.saving=true;renderSaveState('Ukládám…');
+  S.saving=true;S.saveOk=false;renderSaveState('Ukládám…');
   try{
     if(S.od){
-      let bytes=await buildXlsx(),r=await odUpload(bytes);
+      let snap=editSnap(),bytes=await buildXlsx(),r=await odUpload(bytes);
       if(r.status===412){ // changed in OneDrive meanwhile → merge the entries into the newest version and save again
-        await odOpen(S.od,{quiet:true});bytes=await buildXlsx();r=await odUpload(bytes);
+        await odOpen(S.od,{quiet:true});snap=editSnap();bytes=await buildXlsx();r=await odUpload(bytes);
         toast('Sešit se mezitím v OneDrive změnil – vaše záznamy byly sloučeny do nejnovější verze.',5000);
       }
       const j=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error((j.error&&j.error.message)||('OneDrive odpověděl chybou '+r.status));
-      S.edits={};S.retryNote=false;await loadInto(bytes,j.name||S.od.name,null,null,{od:odFrom(j,S.od)});
+      dropSaved(snap);S.retryNote=false;await loadInto(bytes,j.name||S.od.name,null,null,{od:odFrom(j,S.od)});S.saveOk=true;
       if(!opts.quiet)toast(opts.added?'List „'+opts.added+'“ byl přidán a uložen do OneDrive.':'Uloženo do OneDrive: '+S.fileName,opts.added?5000:3200);
     }else if(S.handle&&await ensurePerm()){
       const f=await S.handle.getFile();
@@ -907,7 +914,7 @@ async function save(opts={}){
         const ok=await loadInto(await f.arrayBuffer(),f.name,S.handle,f.lastModified);if(!ok)throw new Error('soubor na disku nelze přečíst');
         toast('Soubor se mezitím změnil — vaše záznamy byly sloučeny do nejnovější verze.',5000);
       }
-      const bytes=await buildXlsx();
+      const snap=editSnap(),bytes=await buildXlsx();
       let f2=await writeHandle(bytes),want=bytes.length;
       if(f2.size>want){ // the storage provider (e.g. the OneDrive app on Android) kept the end of the older, longer file
         const pad=f2.size-want;
@@ -917,15 +924,15 @@ async function save(opts={}){
         }
       }
       if(f2.size!==want)throw new Error('úložiště soubor nezapsalo celý (velikost '+f2.size+' místo '+want+' B). Doporučujeme ⚙ → Připojit OneDrive.');
-      S.edits={};await loadInto(bytes,S.fileName,S.handle,f2.lastModified);
+      dropSaved(snap);await loadInto(bytes,S.fileName,S.handle,f2.lastModified);S.saveOk=true;
       if(!opts.quiet)toast(opts.added?'List „'+opts.added+'“ byl přidán a uložen do '+S.fileName+'.':'Uloženo do '+S.fileName,opts.added?5000:3200);
     }else{
-      const bytes=await buildXlsx();
+      const snap=editSnap(),bytes=await buildXlsx();
       if(opts.share){
         const file=new File([bytes],S.fileName,{type:XLSX_MIME});
         await navigator.share({files:[file],title:S.fileName});
       }else download(bytes,S.fileName);
-      S.edits={};await loadInto(bytes,S.fileName,null,null);
+      dropSaved(snap);await loadInto(bytes,S.fileName,null,null);
       toast(opts.added?'List „'+opts.added+'“ byl přidán. Stažen aktualizovaný '+S.fileName+' — nahraďte jím kopii v OneDrive / na Disku Google.':opts.share?'Aktualizovaný sešit odeslán':'Aktualizovaný '+S.fileName+' byl stažen — nahraďte jím kopii v OneDrive / na Disku Google.',opts.added?7000:5000);
     }
   }catch(e){
@@ -935,7 +942,11 @@ async function save(opts={}){
       clearTimeout(S.retryTimer);S.retryTimer=setTimeout(()=>{if(pendingCount())scheduleAutoSave()},30000);
     }else{console.error(e);toast('Uložení selhalo: '+e.message,6000)}
   }
-  finally{S.saving=false;renderSaveState()}
+  finally{
+    S.saving=false;renderSaveState();
+    const again=S.again||S.saveOk;S.again=false;S.saveOk=false;
+    if(again&&pendingCount()&&autoLive())scheduleAutoSave(); // entries typed during the save go out right after it
+  }
 }
 $('#btnSave').onclick=()=>save();
 $('#btnReload').onclick=async()=>{if(!S.od)return reloadFromDisk(false);try{await odOpen(S.od,{quiet:true});toast('Znovu načteno z OneDrive'+(pendingCount()?' – neuložené záznamy ('+pendingCount()+') zůstávají':''))}catch(e){toast(e.message,6000)}};
@@ -1163,7 +1174,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-07 18:49';
+const APP_VERSION='2026-11-08 11:39';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1426,6 +1437,7 @@ function renderDay(){
   $('#prevDay').disabled=i===0;$('#nextDay').disabled=i===B.days.length-1;
   {const dd=new Date(S.day+'T00:00:00Z'),td=S.day===T?' · dnes':'';
    $('#dayTitle').innerHTML='<span class="lg">'+esc(cap(fmtDay(S.day,{weekday:'long',year:'numeric',month:'long'}))+td)+'</span><span class="sm">'+DAY_ABBR[dow(S.day)]+' '+dd.getUTCDate()+'. '+(dd.getUTCMonth()+1)+'.'+td+'</span>'}
+  const ae=document.activeElement,fk=ae&&ae.matches&&ae.matches('#cards input')?+ae.closest('.card').dataset.k:null,fday=fk!=null?S.renderedDay:null; // typing while a save finishes: keep the field (and keyboard)
   const cards=$('#cards');cards.innerHTML='';
   B.names.forEach((name,k)=>{
     const locked=B.days[i].locked[k];
@@ -1459,6 +1471,8 @@ function renderDay(){
     if(o.future||locked)c.querySelectorAll('button').forEach(b=>b.disabled=true);
     cards.appendChild(c);
   });
+  S.renderedDay=S.day;
+  if(fk!=null&&fday===S.day){const f=cards.querySelectorAll('input')[fk];if(f&&!f.disabled){f.focus({preventScroll:true})}}
   updateDay();
 }
 /* hold −/+ : repeats, faster the longer it is held (after ~30 repeats in steps of 5) */
