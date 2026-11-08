@@ -1,6 +1,7 @@
 # Co je nového
 
 ## 8. 11. 2026
+- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).
 - **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.
 - **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.
 - **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.

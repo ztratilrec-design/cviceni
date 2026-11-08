@@ -230,6 +230,12 @@ input.scrub-on{outline:3px solid var(--sc);outline-offset:1px;background:var(--s
 @media (pointer:coarse){.entry input,.step{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 .mintick{position:absolute;top:50%;width:3px;height:13px;margin:-6.5px 0 0 -1.5px;border-radius:2px;background:var(--text2);box-shadow:0 0 0 2px var(--surface)}
 .bar>i{display:block;height:100%;border-radius:3px}
+/* today, not yet done: the bar pulses a few times when Den is opened / returned to */
+@keyframes nudge{0%,100%{background:var(--surface2);transform:scaleY(1)}50%{background:color-mix(in srgb,var(--bc) 68%,var(--surface2));transform:scaleY(2)}}
+@keyframes nudgeFill{50%{filter:brightness(1.3) saturate(1.2)}}
+.card .bar.nudge{animation:nudge .7s ease-in-out 3}
+.card .bar.nudge>i{animation:nudgeFill .7s ease-in-out 3}
+@media (prefers-reduced-motion:reduce){@keyframes nudge{0%,100%{background:var(--surface2)}50%{background:color-mix(in srgb,var(--bc) 68%,var(--surface2))}}.card .bar.nudge{animation-iteration-count:2}}
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:var(--shadow)}}
 .card.flash{animation:flash 1.4s ease-out}
 .entry input.unsaved{background:var(--warnBg)} /* same tone as the "neuloženo" pill, until saved */
@@ -1213,7 +1219,7 @@ function updateMenu(){
 }
 $('#btnAddYear').onclick=addNextYear;
 /* app version: stamped at build time; the published page is checked for a newer one */
-const APP_VERSION='2026-11-08 16:00';
+const APP_VERSION='2026-11-08 16:23';
 let VER={state:location.protocol==='file:'?'local':'unknown',remote:null,at:0};
 const fmtVer=v=>{const m=/^(\d+)-(\d+)-(\d+) (\d+:\d+)$/.exec(v||'');return m?(+m[3])+'. '+(+m[2])+'. '+m[1]+' '+m[4]:v};
 async function checkVersion(force){
@@ -1234,7 +1240,7 @@ function updateVersion(){
   cog.title=VER.state==='update'?'Nastavení – je k dispozici nová verze':'Nastavení';
 }
 /* what's new: CHANGELOG.md is built into the page; after an update the new entries pop up once */
-const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
+const CHANGELOG_MD="# Co je nového\n\n## 8. 11. 2026\n- **Připomenutí na Den** – u dneška krátce zablikají lišty cviků, které ještě nejsou splněné (po otevření aplikace, návratu na Den nebo do aplikace).\n- **Den na výšku** – datum, název dne a „Splněno x ze 4“ zůstávají při posouvání nahoře.\n- **Co je nového** – přehled změn v ⚙ a po aktualizaci se ukáže, co přibylo.\n- **Statistiky → Podle dne v týdnu** – heatmapa Po–Ne (souvislá, bez mezer): průměr každého cviku v % denního cíle, kolikrát byl splněn a perfektní dny; nejsilnější a nejslabší den.\n- **Oprava ukládání** – záznam zadaný během probíhajícího ukládání (např. +25 kliků a hned Rest na dřepy) se už neztratí; uloží se hned po něm. Rozepsané pole zůstane aktivní.\n\n## 7. 11. 2026\n- **Zadávání tažením (dotyk)** – podržte pole s číslem a táhněte nahoru / dolů; vlevo se ukáže pravítko s hodnotou, krátké zastavení na *Min* a *Rest*. Návrat na místo podržení vrátí původní hodnotu.\n- **Podržení − / +** přičítá či odečítá opakovaně a postupně rychleji.\n- **⚙ Verze aplikace** – „Nejnovější verze“, nebo nabídka načíst novější (zelená tečka na ⚙).\n- **Oprava poškozeného sešitu** po uložení přes aplikaci OneDrive v Androidu – soubor se při otevření obnoví a ukládání je nově ověřované.\n\n## 6. 11. 2026\n- **První verze na webu** (GitHub Pages), instalace jako aplikace, připojení k **OneDrive** s automatickým ukládáním a slučováním změn.\n- **Den** – rychlá tlačítka *+10 / +25 / Min / Rest* (u shybů *+5 / +10*), značka minima na liště, rozpis na jednom řádku, animace ✓.\n- **Historie** – tlačítko *Dnes*.\n- **Statistiky** – *Trend*, *Celkově za období*, *Po měsících* (klik = filtr), cena pokut.\n- Obnovení sešitu tažením dolů, Enter přeskočí na další cvik, „✓ Uloženo HH:MM“, ⚙ *Nainstalovat aplikaci*.\n";
 const USED_BEFORE=['tab','autosave','range','theme'].some(k=>ls.get(k)!=null); // checked at start, before this visit changes anything
 const CL=(()=>{const out=[];let cur=null;for(const ln of CHANGELOG_MD.split(/\r?\n/)){
   if(ln.startsWith('## ')){cur={id:ln.slice(3).trim(),items:[]};out.push(cur)}else if(cur&&/^\s*- /.test(ln))cur.items.push(ln.replace(/^\s*- /,''));else if(cur&&cur.items.length&&/^\s{2,}\S/.test(ln))cur.items[cur.items.length-1]+=' '+ln.trim()}
@@ -1419,13 +1425,27 @@ let LAST_TAB=null;
 function renderTab(){
   compute();
   if(S.tab==='history'&&LAST_TAB!=='history'&&S.day)S.histMonth=S.day.slice(0,7); // on entering Historie: show the month of the day open in Den
+  const enteringDay=S.tab==='day'&&LAST_TAB!=='day';
   LAST_TAB=S.tab;
   for(const t of ['day','history','stats'])$('#tab-'+t).hidden=S.tab!==t;
   document.querySelector('main').classList.toggle('hist',S.tab==='history');
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
   setTopH();
   if(S.tab==='day')renderDay();else if(S.tab==='history')renderHistory();else renderStats();
+  if(enteringDay)nudgeToday();
 }
+/* motivation: on today's Den, bars of exercises not yet done pulse briefly (app opened, Den re-entered, app back after ≥ 30 s) */
+function nudgeToday(){
+  setTimeout(()=>{
+    if(!S.book||S.tab!=='day'||S.day!==todayISO()||document.visibilityState!=='visible')return;
+    const o=CALC[S.book.index.get(S.day)];if(!o||o.future)return;
+    document.querySelectorAll('#cards .card').forEach(c=>{const k=+c.dataset.k;if(!(o.rem[k]>0))return;
+      const b=c.querySelector('.bar');b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');
+      b.addEventListener('animationend',e=>{if(e.target===b)b.classList.remove('nudge')},{once:true})});
+  },350);
+}
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}if(hiddenAt&&Date.now()-hiddenAt>=30000)nudgeToday()});
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.tab=b.dataset.tab;ls.set('tab',S.tab);renderTab()});
 
 /* ---------- swipe left / right to switch tabs ---------- */
@@ -1514,7 +1534,7 @@ function renderDay(){
         <input type="number" inputmode="numeric" min="0" step="1" placeholder="–" enterkeyhint="${k<3?'next':'done'}" aria-label="${esc(name)} – hotovo" ${locked?'disabled title="Tato buňka obsahuje v listu vzorec"':''}>
         <button class="step" data-step="1" aria-label="více">+</button></div>
       <div class="quick">${(o.t[k]>=50?[10,25]:[5,10]).map(q=>`<button data-add="${q}">+${q}</button>`).join('')}<button data-min>Min</button><button data-fill title="Doplnit vše, co zbývá">Rest</button></div></div>
-      <div class="bar"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden style="background:${exColor(k)}"></span></div>`;
+      <div class="bar" style="--bc:${exColor(k)}"><i data-bar style="background:${exColor(k)}"></i><span class="mintick" data-tick hidden style="background:${exColor(k)}"></span></div>`;
     const inp=c.querySelector('input');const v=getDone(i,k);inp.value=v==null?'':v;
     const setVal=nv=>{
       if(nv!=null&&(!isFinite(nv)||nv<0))nv=0;
